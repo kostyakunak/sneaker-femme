@@ -6,13 +6,29 @@ WORKDIR /app
 # Обновление npm до последней версии
 RUN npm install -g npm@9
 
-# Копирование файлов зависимостей
+# Копирование корневого package.json и package-lock.json
 COPY package.json package-lock.json ./
 
-# Установка всех зависимостей (включая dev для сборки)
-RUN npm ci
+# Копирование package.json из всех workspace пакетов (нужно для правильной установки зависимостей)
+# Это позволяет npm правильно разрешить все зависимости workspace
+COPY packages/evershop/package.json ./packages/evershop/
+COPY packages/postgres-query-builder/package.json ./packages/postgres-query-builder/
+COPY packages/create-evershop-app/package.json ./packages/create-evershop-app/
 
-# Копирование исходного кода
+# Копирование package.json из extensions
+COPY extensions/agegate/package.json ./extensions/agegate/
+COPY extensions/azure_file_storage/package.json ./extensions/azure_file_storage/
+COPY extensions/google_login/package.json ./extensions/google_login/
+COPY extensions/product_review/package.json ./extensions/product_review/
+COPY extensions/resend/package.json ./extensions/resend/
+COPY extensions/s3_file_storage/package.json ./extensions/s3_file_storage/
+COPY extensions/sendgrid/package.json ./extensions/sendgrid/
+
+# Установка всех зависимостей (включая dev для сборки)
+# npm install автоматически установит зависимости всех workspace пакетов
+RUN npm install
+
+# Копирование остального исходного кода
 COPY packages ./packages
 COPY extensions ./extensions
 COPY config ./config
@@ -27,13 +43,28 @@ FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Копирование package файлов
+# Копирование корневого package.json
 COPY package.json ./
 
-# Копирование package-lock.json из builder (где он точно есть)
+# Копирование package-lock.json из builder
 COPY --from=builder /app/package-lock.json ./
 
+# Копирование package.json из workspace пакетов для production
+COPY --from=builder /app/packages/evershop/package.json ./packages/evershop/
+COPY --from=builder /app/packages/postgres-query-builder/package.json ./packages/postgres-query-builder/
+COPY --from=builder /app/packages/create-evershop-app/package.json ./packages/create-evershop-app/
+
+# Копирование package.json из extensions
+COPY --from=builder /app/extensions/agegate/package.json ./extensions/agegate/
+COPY --from=builder /app/extensions/azure_file_storage/package.json ./extensions/azure_file_storage/
+COPY --from=builder /app/extensions/google_login/package.json ./extensions/google_login/
+COPY --from=builder /app/extensions/product_review/package.json ./extensions/product_review/
+COPY --from=builder /app/extensions/resend/package.json ./extensions/resend/
+COPY --from=builder /app/extensions/s3_file_storage/package.json ./extensions/s3_file_storage/
+COPY --from=builder /app/extensions/sendgrid/package.json ./extensions/sendgrid/
+
 # Установка только production зависимостей
+# npm ci с workspaces установит зависимости всех пакетов
 RUN npm ci --omit=dev && npm cache clean --force
 
 # Копирование собранного кода из builder
