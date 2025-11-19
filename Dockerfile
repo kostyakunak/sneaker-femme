@@ -8,6 +8,7 @@ RUN npm install -g npm@9
 
 # Копирование файлов зависимостей
 COPY package*.json ./
+COPY package-lock.json ./
 
 # Установка зависимостей (включая dev для сборки)
 RUN npm ci --only=production=false
@@ -27,9 +28,9 @@ FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Копирование package файлов (включая package-lock.json для npm ci)
+# Копирование package файлов и package-lock.json
 COPY package*.json ./
-COPY package-lock.json* ./
+COPY package-lock.json ./
 
 # Установка только production зависимостей
 RUN npm ci --omit=dev && npm cache clean --force
