@@ -27,11 +27,12 @@ FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Копирование package файлов
+# Копирование package файлов (включая package-lock.json для npm ci)
 COPY package*.json ./
+COPY package-lock.json* ./
 
 # Установка только production зависимостей
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Копирование собранного кода из builder
 COPY --from=builder /app/packages ./packages
