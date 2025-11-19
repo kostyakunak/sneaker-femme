@@ -1,0 +1,28 @@
+{
+  "name": "@shop/s3_file_storage",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "An extension to use AWS S3 File Storage",
+  "scripts": {
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "aws s3 file storage"
+  ],
+  "author": "",
+  "license": "GNU GENERAL PUBLIC LICENSE 3.0",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.438.0"
+  }
+}

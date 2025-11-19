@@ -1,0 +1,30 @@
+{
+  "name": "@shop/resend",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "compile": "tsc"
+  },
+  "description": "A Resend extension for email sending.",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "email",
+    "resend"
+  ],
+  "author": "",
+  "license": "GNU GENERAL PUBLIC LICENSE 3.0",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "dependencies": {
+    "handlebars": "^4.7.8",
+    "resend": "^3.2.0"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "shop": {
+    "currency": "UAH",
+    "language": "uk",
+    "weightUnit": "kg",
+    "timezone": "Europe/Kiev"
+  }
+}

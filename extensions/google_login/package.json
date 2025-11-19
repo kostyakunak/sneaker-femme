@@ -1,0 +1,26 @@
+{
+  "name": "@shop/google_login",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "A Google authentication extension.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "google login"
+  ],
+  "author": "",
+  "license": "GNU GENERAL PUBLIC LICENSE 3.0",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "engines": {
+    "node": ">= 20.0.0"
+  }
+}
