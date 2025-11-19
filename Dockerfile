@@ -39,9 +39,9 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/translations ./translations
 
-# Копирование public и media (если они есть)
-COPY public ./public 2>/dev/null || true
-COPY media ./media 2>/dev/null || true
+# Создание директорий public и media (если их нет)
+# Эти директории обычно генерируются приложением или хранятся в S3/Azure
+RUN mkdir -p ./public ./media
 
 # Создание пользователя без прав root для безопасности
 RUN addgroup -g 1001 -S nodejs && \
