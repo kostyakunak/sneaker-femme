@@ -1,10 +1,13 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Установка рабочей директории
 WORKDIR /app
 
 # Обновление npm до последней версии
 RUN npm install -g npm@9
+
+# Отключаем husky (не нужен в production/build окружении)
+ENV HUSKY=0
 
 # Копирование корневого package.json и package-lock.json
 COPY package.json package-lock.json ./
@@ -25,9 +28,12 @@ RUN npm install
 RUN npm run compile && npm run build
 
 # Production образ
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
+
+# Отключаем husky в production
+ENV HUSKY=0
 
 # Копирование корневого package.json
 COPY package.json ./
