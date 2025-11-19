@@ -27,6 +27,9 @@ RUN npm install
 # Сборка приложения
 RUN npm run compile && npm run build
 
+# Удаляем dev-зависимости после сборки, чтобы не таскать их дальше
+RUN npm prune --omit=dev
+
 # Production образ
 FROM node:20-alpine AS production
 
@@ -35,29 +38,8 @@ WORKDIR /app
 # Отключаем husky в production
 ENV HUSKY=0
 
-# Копирование корневого package.json
-COPY package.json ./
-
-# Копирование package-lock.json из builder
-COPY --from=builder /app/package-lock.json ./
-
-# Копирование package.json из workspace пакетов для production
-COPY --from=builder /app/packages/evershop/package.json ./packages/evershop/
-COPY --from=builder /app/packages/postgres-query-builder/package.json ./packages/postgres-query-builder/
-COPY --from=builder /app/packages/create-evershop-app/package.json ./packages/create-evershop-app/
-
-# Копирование package.json из extensions
-COPY --from=builder /app/extensions/agegate/package.json ./extensions/agegate/
-COPY --from=builder /app/extensions/azure_file_storage/package.json ./extensions/azure_file_storage/
-COPY --from=builder /app/extensions/google_login/package.json ./extensions/google_login/
-COPY --from=builder /app/extensions/product_review/package.json ./extensions/product_review/
-COPY --from=builder /app/extensions/resend/package.json ./extensions/resend/
-COPY --from=builder /app/extensions/s3_file_storage/package.json ./extensions/s3_file_storage/
-COPY --from=builder /app/extensions/sendgrid/package.json ./extensions/sendgrid/
-
-# Установка только production зависимостей
-# npm ci с workspaces установит зависимости всех пакетов
-RUN npm ci --omit=dev && npm cache clean --force
+# Копируем готовое дерево зависимостей из builder
+COPY --from=builder /app/node_modules ./node_modules
 
 # Копирование собранного кода из builder
 COPY --from=builder /app/packages ./packages
