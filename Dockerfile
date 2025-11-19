@@ -7,11 +7,10 @@ WORKDIR /app
 RUN npm install -g npm@9
 
 # Копирование файлов зависимостей
-COPY package*.json ./
-COPY package-lock.json ./
+COPY package.json package-lock.json ./
 
-# Установка зависимостей (включая dev для сборки)
-RUN npm ci --only=production=false
+# Установка всех зависимостей (включая dev для сборки)
+RUN npm ci
 
 # Копирование исходного кода
 COPY packages ./packages
@@ -29,10 +28,7 @@ FROM node:18-alpine AS production
 WORKDIR /app
 
 # Копирование package файлов
-COPY package*.json ./
-
-# Копирование package-lock.json из builder (где он точно есть после npm ci)
-COPY --from=builder /app/package-lock.json ./
+COPY package.json package-lock.json ./
 
 # Установка только production зависимостей
 RUN npm ci --omit=dev && npm cache clean --force
@@ -43,8 +39,7 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/translations ./translations
 
-# Создание директорий public и media (если их нет)
-# Эти директории обычно генерируются приложением или хранятся в S3/Azure
+# Создание директорий public и media
 RUN mkdir -p ./public ./media
 
 # Создание пользователя без прав root для безопасности
@@ -54,7 +49,7 @@ RUN addgroup -g 1001 -S nodejs && \
 
 USER nodejs
 
-# Открытие порта (Railway автоматически определяет PORT из переменных окружения)
+# Открытие порта
 EXPOSE 3000
 
 # Запуск приложения
