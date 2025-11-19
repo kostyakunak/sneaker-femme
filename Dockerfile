@@ -9,31 +9,17 @@ RUN npm install -g npm@9
 # Копирование корневого package.json и package-lock.json
 COPY package.json package-lock.json ./
 
-# Копирование package.json из всех workspace пакетов (нужно для правильной установки зависимостей)
-# Это позволяет npm правильно разрешить все зависимости workspace
-COPY packages/evershop/package.json ./packages/evershop/
-COPY packages/postgres-query-builder/package.json ./packages/postgres-query-builder/
-COPY packages/create-evershop-app/package.json ./packages/create-evershop-app/
-
-# Копирование package.json из extensions
-COPY extensions/agegate/package.json ./extensions/agegate/
-COPY extensions/azure_file_storage/package.json ./extensions/azure_file_storage/
-COPY extensions/google_login/package.json ./extensions/google_login/
-COPY extensions/product_review/package.json ./extensions/product_review/
-COPY extensions/resend/package.json ./extensions/resend/
-COPY extensions/s3_file_storage/package.json ./extensions/s3_file_storage/
-COPY extensions/sendgrid/package.json ./extensions/sendgrid/
-
-# Установка всех зависимостей (включая dev для сборки)
-# npm install автоматически установит зависимости всех workspace пакетов
-RUN npm install
-
-# Копирование остального исходного кода
+# Копирование ВСЕХ packages и extensions ПЕРЕД установкой зависимостей
+# Это необходимо для правильного разрешения зависимостей workspace
 COPY packages ./packages
 COPY extensions ./extensions
 COPY config ./config
 COPY translations ./translations
 COPY tsconfig.json ./
+
+# Установка всех зависимостей (включая dev для сборки)
+# npm install автоматически установит зависимости всех workspace пакетов
+RUN npm install
 
 # Сборка приложения
 RUN npm run compile && npm run build
