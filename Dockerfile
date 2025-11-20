@@ -20,6 +20,9 @@ COPY config ./config
 COPY translations ./translations
 COPY tsconfig.json ./
 
+# Копирование статических файлов (логотипы)
+COPY public ./public
+
 # Копирование папки media (media уже добавлена в Git)
 COPY media ./media
 
