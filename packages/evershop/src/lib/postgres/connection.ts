@@ -27,7 +27,14 @@ switch (sslMode) {
     break;
   }
   case 'require':
-  case 'prefer':
+  case 'prefer': {
+    // For Railway PostgreSQL, use SSL but don't verify certificate (self-signed)
+    const ssl: PoolConfig['ssl'] = {
+      rejectUnauthorized: false
+    };
+    connectionSetting.ssl = ssl;
+    break;
+  }
   case 'verify-ca':
   case 'verify-full': {
     const ssl: PoolConfig['ssl'] = {
