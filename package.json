@@ -27,7 +27,8 @@
     "analyze-deps": "node scripts/analyze-dependencies.js",
     "validate-docker": "node scripts/validate-docker-build.js",
     "test-production-build": "node scripts/test-production-build.js",
-    "pre-deploy-full": "npm run pre-deploy-check && npm run validate-docker && npm run analyze-deps"
+    "pre-deploy-full": "npm run pre-deploy-check && npm run validate-docker && npm run analyze-deps",
+    "seed": "node ./packages/evershop/dist/bin/seed/index.js"
   },
   "author": "",
   "license": "GNU GENERAL PUBLIC LICENSE 3.0",
