@@ -1,11 +1,11 @@
 import path from 'path';
-import watcher from '@parcel/watcher';
 import touch from 'touch';
 import type { Compiler, WebpackPluginInstance } from 'webpack';
 import { getEnabledExtensions } from '../../../bin/extension/index.js';
 import { CONSTANTS } from '../../helpers.js';
 import { debug } from '../../log/logger.js';
 import { getEnabledTheme } from '../../util/getEnabledTheme.js';
+import { isDevelopmentMode } from '../../util/isDevelopmentMode.js';
 
 interface AsyncWebpackSubscription {
   unsubscribe(): Promise<void>;
@@ -28,7 +28,8 @@ export class ThemeWatcherPlugin implements WebpackPluginInstance {
   }
 
   apply(compiler: Compiler): void {
-    if (compiler.options.mode !== 'development') {
+    // Early return for production - don't even try to initialize watcher
+    if (compiler.options.mode !== 'development' || !isDevelopmentMode()) {
       return;
     }
 
@@ -40,7 +41,9 @@ export class ThemeWatcherPlugin implements WebpackPluginInstance {
     watcherSubscribers.add(compiler);
 
     if (!globalWatcher) {
-      this.initializeGlobalWatcher();
+      this.initializeGlobalWatcher().catch((error) => {
+        debug(error);
+      });
     }
 
     compiler.hooks.compilation.tap('ThemeWatcherPlugin', (compilation) => {
@@ -134,13 +137,20 @@ export class ThemeWatcherPlugin implements WebpackPluginInstance {
     });
   }
 
-  private initializeGlobalWatcher(): void {
+  private async initializeGlobalWatcher(): Promise<void> {
+    // Only load @parcel/watcher in development mode
+    if (!isDevelopmentMode()) {
+      return;
+    }
+
     const theme = getEnabledTheme();
     if (!theme) return;
 
+    // Dynamic import to avoid loading in production
+    const watcher = await import('@parcel/watcher');
     const watchPath = path.join(theme.path, 'dist', 'components');
 
-    watcher
+    watcher.default
       .subscribe(watchPath, (err: Error | null, events: any[]) => {
         if (err) {
           debug(err);
