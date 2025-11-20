@@ -80,6 +80,9 @@ COPY --from=builder /app/.evershop ./.evershop
 # Создание директорий public и media
 RUN mkdir -p ./public ./media
 
+# Копирование статических файлов (логотипы и т.д.)
+COPY --from=builder /app/public ./public
+
 # Копирование медиа файлов из builder
 COPY --from=builder /app/media ./media
 

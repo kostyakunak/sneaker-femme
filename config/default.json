@@ -4,5 +4,13 @@
     "language": "uk",
     "weightUnit": "kg",
     "timezone": "Europe/Kyiv"
+  },
+  "themeConfig": {
+    "logo": {
+      "src": "/la-femme-et-ses-shoes-high-resolution-logo-transparent.png",
+      "alt": "La Femme Et Ses Shoes",
+      "width": 200,
+      "height": 60
+    }
   }
 }

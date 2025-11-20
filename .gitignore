@@ -19,7 +19,8 @@ npm-debug.log
 /package-log.json
 # /media - временно включено для тестовых данных
 # /media
-/public
+# /public - временно включено для логотипов
+# /public
 .DS_Store
 .log
 coverage
