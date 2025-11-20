@@ -20,6 +20,11 @@ COPY config ./config
 COPY translations ./translations
 COPY tsconfig.json ./
 
+# Копирование папки media (если существует в Git)
+# Создаем директорию на случай, если media нет
+RUN mkdir -p ./media
+COPY media ./media
+
 # Установка всех зависимостей (включая dev для сборки)
 # npm install автоматически установит зависимости всех workspace пакетов
 RUN npm install
