@@ -22,5 +22,5 @@
       "@evershop/postgres-query-builder": ["packages/postgres-query-builder/src/index.ts"],
       "@evershop/postgres-query-builder/*": ["packages/postgres-query-builder/src/*"]
     }
-  },
+  }
 }
