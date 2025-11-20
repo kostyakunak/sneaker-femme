@@ -8,7 +8,7 @@ export default function Logo({ dashboardUrl }: LogoProps) {
     <div className="logo w-9 h-auto flex items-center">
       <a href={dashboardUrl} className="flex items-end">
         <img
-          src="/admin/assets/la-femme-et-ses-shoes-high-resolution-logo-grayscale-transparent.png"
+          src="/la-femme-et-ses-shoes-high-resolution-logo-grayscale-transparent.png"
           alt="La Femme Et Ses Shoes"
           className="w-32 h-auto"
         />
