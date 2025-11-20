@@ -20,10 +20,8 @@ COPY config ./config
 COPY translations ./translations
 COPY tsconfig.json ./
 
-# Копирование папки media (если существует в Git)
-# Создаем директорию сначала, затем копируем (если есть)
-RUN mkdir -p ./media
-COPY media* ./media/ 2>/dev/null || true
+# Копирование папки media (media уже добавлена в Git)
+COPY media ./media
 
 # Установка всех зависимостей (включая dev для сборки)
 # npm install автоматически установит зависимости всех workspace пакетов
@@ -82,11 +80,8 @@ COPY --from=builder /app/.evershop ./.evershop
 # Создание директорий public и media
 RUN mkdir -p ./public ./media
 
-# Копирование медиа файлов из builder (если они были скопированы в builder stage)
-# Используем проверку существования через shell
-RUN if [ -d /app/media ] && [ "$(ls -A /app/media 2>/dev/null)" ]; then \
-      cp -r /app/media/* ./media/ 2>/dev/null || true; \
-    fi
+# Копирование медиа файлов из builder
+COPY --from=builder /app/media ./media
 
 # Создание пользователя без прав root для безопасности
 RUN addgroup -g 1001 -S nodejs && \
