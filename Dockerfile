@@ -25,9 +25,12 @@ COPY tsconfig.json ./
 RUN npm install
 
 # Сборка приложения
-RUN npm run compile && npm run build
+# Сначала компилируем postgres-query-builder, затем evershop, затем собираем приложение
+# Важно: postgres-query-builder должен быть скомпилирован ПЕРЕД evershop, так как evershop зависит от него
+RUN npm run compile:db && npm run compile && npm run build
 
 # Удаляем dev-зависимости после сборки, чтобы не таскать их дальше
+# Workspace пакеты остаются, так как они нужны для работы приложения
 RUN npm prune --omit=dev
 
 # Production образ

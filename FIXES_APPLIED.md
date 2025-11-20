@@ -2,7 +2,12 @@
 
 ## ✅ Что было исправлено
 
-### 1. Ошибка в Dockerfile (строка 45)
+### 1. КРИТИЧЕСКОЕ: Отсутствие компиляции postgres-query-builder
+**Проблема:** Пакет `@evershop/postgres-query-builder` не компилировался, что вызывало ошибку `ERR_MODULE_NOT_FOUND`
+**Решение:** Добавлена команда `npm run compile:db` перед `npm run compile` в Dockerfile
+**Файл:** `Dockerfile` (строка 30)
+
+### 2. Ошибка в Dockerfile (строка 45)
 **Проблема:** Неправильный синтаксис команды COPY
 ```dockerfile
 # БЫЛО (неправильно):
