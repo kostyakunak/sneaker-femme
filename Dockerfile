@@ -29,6 +29,9 @@ RUN npm install
 # Важно: postgres-query-builder должен быть скомпилирован ПЕРЕД evershop, так как evershop зависит от него
 RUN npm run compile:db && npm run compile && npm run build
 
+# Проверяем, что сборка прошла успешно - директория .evershop/build должна существовать
+RUN test -d .evershop/build || (echo "ERROR: .evershop/build directory not found after build!" && exit 1)
+
 # Удаляем dev-зависимости после сборки, чтобы не таскать их дальше
 # Workspace пакеты остаются, так как они нужны для работы приложения
 RUN npm prune --omit=dev
@@ -54,6 +57,7 @@ COPY --from=builder /app/config ./config
 COPY --from=builder /app/translations ./translations
 
 # Копирование директории сборки (.evershop/build) - критически важно для работы приложения
+# Проверяем, что директория существует перед копированием
 COPY --from=builder /app/.evershop ./.evershop
 
 # Создание директорий public и media
