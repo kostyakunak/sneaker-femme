@@ -30,7 +30,21 @@ RUN npm install
 RUN npm run compile:db && npm run compile && npm run build
 
 # Проверяем, что сборка прошла успешно - директория .evershop/build должна существовать
-RUN test -d .evershop/build || (echo "ERROR: .evershop/build directory not found after build!" && exit 1)
+# И проверяем наличие критических файлов
+RUN echo "=== Checking build results ===" && \
+    test -d .evershop/build || (echo "ERROR: .evershop/build directory not found after build!" && exit 1) && \
+    echo "Build directory exists. Checking structure..." && \
+    find .evershop/build -type d | head -20 && \
+    echo "Checking for JSON files..." && \
+    find .evershop/build -type f -name "*.json" | head -20 && \
+    echo "Checking for critical files..." && \
+    (test -f .evershop/build/frontStore/homepage/client/index.json && echo "✓ frontStore/homepage/client/index.json found") || \
+     (echo "ERROR: frontStore/homepage/client/index.json not found!" && \
+      echo "Available files in .evershop/build:" && \
+      find .evershop/build -type f | head -50 && \
+      echo "Available directories:" && \
+      find .evershop/build -type d && \
+      exit 1)
 
 # Удаляем dev-зависимости после сборки, чтобы не таскать их дальше
 # Workspace пакеты остаются, так как они нужны для работы приложения

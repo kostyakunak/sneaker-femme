@@ -26,7 +26,7 @@ modules.forEach((module) => {
     loadModuleRoutes(module.path);
   } catch (e) {
     error(e);
-    process.exit(0);
+    process.exit(1);
   }
 });
 
@@ -54,7 +54,7 @@ export default async function build() {
     validateConfiguration(config);
   } catch (e) {
     error(e);
-    process.exit(0);
+    process.exit(1);
   }
   process.env.ALLOW_CONFIG_MUTATIONS = false;
 
@@ -68,12 +68,17 @@ export default async function build() {
 process.on('uncaughtException', function (exception) {
   import('../../lib/log/logger.js').then((module) => {
     module.error(exception);
+    process.exit(1);
   });
 });
 process.on('unhandledRejection', (reason, p) => {
   import('../../lib/log/logger.js').then((module) => {
     module.error(`Unhandled Rejection: ${reason} at: ${p}`);
+    process.exit(1);
   });
 });
 
-build();
+build().catch((err) => {
+  error(err);
+  process.exit(1);
+});
