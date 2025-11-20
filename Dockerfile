@@ -77,6 +77,11 @@ COPY --from=builder /app/.evershop ./.evershop
 # Создание директорий public и media
 RUN mkdir -p ./public ./media
 
+# Копирование медиа файлов (изображения товаров, виджетов и т.д.)
+# Если папка media существует в builder, копируем её
+# Это нужно для тестовых данных, загруженных через seed скрипт
+COPY --from=builder /app/media ./media
+
 # Создание пользователя без прав root для безопасности
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
