@@ -53,6 +53,9 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/translations ./translations
 
+# Копирование директории сборки (.evershop/build) - критически важно для работы приложения
+COPY --from=builder /app/.evershop ./.evershop
+
 # Создание директорий public и media
 RUN mkdir -p ./public ./media
 
