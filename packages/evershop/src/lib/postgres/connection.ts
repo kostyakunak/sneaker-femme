@@ -69,9 +69,19 @@ switch (sslMode) {
 
 const pool = new Pool(connectionSetting);
 // Set the timezone
-pool.on('connect', (client) => {
-  const timeZone = getConfig('shop.timezone', 'UTC');
-  client.query(`SET TIMEZONE TO "${timeZone}";`);
+pool.on('connect', async (client) => {
+  let timeZone = getConfig('shop.timezone', 'UTC');
+  // PostgreSQL doesn't accept "Europe/Kiev", use "Europe/Kyiv" instead
+  if (timeZone === 'Europe/Kiev') {
+    timeZone = 'Europe/Kyiv';
+  }
+  // Use UTC as fallback for production safety
+  try {
+    await client.query(`SET TIMEZONE TO '${timeZone}';`);
+  } catch (e) {
+    // If timezone is invalid, use UTC
+    await client.query(`SET TIMEZONE TO 'UTC';`);
+  }
 });
 
 async function getConnection(): Promise<PoolClient> {
