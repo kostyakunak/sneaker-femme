@@ -5,19 +5,22 @@ import type { PoolConfig } from 'pg';
 import { getConfig } from '../util/getConfig.js';
 
 // Use env for the database connection, maintain the backward compatibility
+// Support Railway standard variables (PGHOST, PGPORT, etc.) and custom DB_* variables
 const connectionSetting: PoolConfig = {
-  host: process.env.DB_HOST || getConfig('system.database.host'),
+  host: process.env.PGHOST || process.env.DB_HOST || getConfig('system.database.host'),
   port:
+    (process.env.PGPORT as unknown as number) ||
     (process.env.DB_PORT as unknown as number) ||
     (getConfig('system.database.port') as unknown as number),
-  user: process.env.DB_USER || getConfig('system.database.user'),
-  password: process.env.DB_PASSWORD || getConfig('system.database.password'),
-  database: process.env.DB_NAME || getConfig('system.database.database'),
+  user: process.env.PGUSER || process.env.DB_USER || getConfig('system.database.user'),
+  password: process.env.PGPASSWORD || process.env.DB_PASSWORD || getConfig('system.database.password'),
+  database: process.env.PGDATABASE || process.env.DB_NAME || getConfig('system.database.database'),
   max: 20
 };
 
 // Support SSL
-const sslMode = process.env.DB_SSLMODE || getConfig('system.database.ssl_mode');
+// Railway PostgreSQL requires SSL, default to 'require' if not specified
+const sslMode = process.env.DB_SSLMODE || process.env.PGSSLMODE || getConfig('system.database.ssl_mode') || 'require';
 switch (sslMode) {
   case 'disable': {
     connectionSetting.ssl = false;
