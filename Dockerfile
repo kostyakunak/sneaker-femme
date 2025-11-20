@@ -41,6 +41,9 @@ ENV HUSKY=0
 # Копируем готовое дерево зависимостей из builder
 COPY --from=builder /app/node_modules ./node_modules
 
+# Копирование package.json и package-lock.json (необходимо для npm run start)
+COPY --from=builder /app/package*.json ./
+
 # Копирование собранного кода из builder
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/extensions ./extensions
