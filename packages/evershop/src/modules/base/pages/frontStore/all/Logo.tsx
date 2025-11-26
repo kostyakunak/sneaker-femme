@@ -19,7 +19,14 @@ export default function Logo({
     <div className="logo md:ml-0 flex justify-center items-center">
       {src && (
         <a href="/" className="logo-icon">
-          <img src={src} alt={alt} width={width} height={height} />
+          <img 
+            src={src} 
+            alt={alt} 
+            width={width} 
+            height={height}
+            className="max-w-[200px] h-auto"
+            style={{ maxHeight: `${height}px` }}
+          />
         </a>
       )}
       {!src && (
