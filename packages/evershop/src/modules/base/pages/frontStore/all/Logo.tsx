@@ -24,8 +24,7 @@ export default function Logo({
             alt={alt} 
             width={width} 
             height={height}
-            className="max-w-[200px] h-auto"
-            style={{ maxHeight: `${height}px` }}
+            className="max-w-[200px] h-auto object-contain"
           />
         </a>
       )}

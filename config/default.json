@@ -1,5 +1,6 @@
 {
   "shop": {
+    "name": "Geass Shoes ™",
     "currency": "UAH",
     "language": "uk",
     "weightUnit": "kg",
@@ -8,9 +9,9 @@
   "themeConfig": {
     "logo": {
       "src": "/main-logo.jpg",
-      "alt": "La Femme Et Ses Shoes",
-      "width": 150,
-      "height": 45
+      "alt": "Geass Shoes ™",
+      "width": 200,
+      "height": 200
     }
   }
 }
