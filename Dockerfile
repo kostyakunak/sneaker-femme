@@ -96,10 +96,22 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
+# Создание скрипта для проверки и инициализации volume
+# Railway автоматически настраивает права доступа на volume, но скрипт гарантирует
+# что директория существует и доступна для записи
+RUN echo '#!/bin/sh' > /app/init-volume.sh && \
+    echo 'if [ ! -d /app/media ]; then' >> /app/init-volume.sh && \
+    echo '  echo "Creating media directory..."' >> /app/init-volume.sh && \
+    echo '  mkdir -p /app/media' >> /app/init-volume.sh && \
+    echo 'fi' >> /app/init-volume.sh && \
+    echo 'echo "Media volume ready at /app/media"' >> /app/init-volume.sh && \
+    chmod +x /app/init-volume.sh && \
+    chown nodejs:nodejs /app/init-volume.sh
+
 USER nodejs
 
 # Открытие порта
 EXPOSE 3000
 
-# Запуск приложения
-CMD ["npm", "run", "start"]
+# Запуск приложения с инициализацией volume
+CMD ["sh", "-c", "/app/init-volume.sh && npm run start"]

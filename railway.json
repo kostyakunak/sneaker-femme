@@ -10,7 +10,7 @@
   },
   "mounts": [
     {
-      "volume": "media-storage",
+      "volume": "sneaker-femme-volume",
       "mountPath": "/app/media"
     }
   ]
