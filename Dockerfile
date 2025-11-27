@@ -96,22 +96,37 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
-# Создание скрипта для проверки и инициализации volume
-# Railway автоматически настраивает права доступа на volume, но скрипт гарантирует
-# что директория существует и доступна для записи
-RUN echo '#!/bin/sh' > /app/init-volume.sh && \
-    echo 'if [ ! -d /app/media ]; then' >> /app/init-volume.sh && \
-    echo '  echo "Creating media directory..."' >> /app/init-volume.sh && \
-    echo '  mkdir -p /app/media' >> /app/init-volume.sh && \
-    echo 'fi' >> /app/init-volume.sh && \
-    echo 'echo "Media volume ready at /app/media"' >> /app/init-volume.sh && \
-    chmod +x /app/init-volume.sh && \
-    chown nodejs:nodejs /app/init-volume.sh
+# Создание entrypoint скрипта, который исправляет права на volume перед запуском
+# Этот скрипт должен запускаться от root, чтобы иметь возможность изменить права
+RUN echo '#!/bin/sh' > /app/docker-entrypoint.sh && \
+    echo 'set -e' >> /app/docker-entrypoint.sh && \
+    echo '' >> /app/docker-entrypoint.sh && \
+    echo '# Исправление прав доступа на volume /app/media' >> /app/docker-entrypoint.sh && \
+    echo 'if [ -d /app/media ]; then' >> /app/docker-entrypoint.sh && \
+    echo '  echo "Fixing permissions on /app/media volume..."' >> /app/docker-entrypoint.sh && \
+    echo '  chown -R nodejs:nodejs /app/media' >> /app/docker-entrypoint.sh && \
+    echo '  chmod -R 755 /app/media' >> /app/docker-entrypoint.sh && \
+    echo '  echo "Permissions fixed. Media volume ready."' >> /app/docker-entrypoint.sh && \
+    echo 'else' >> /app/docker-entrypoint.sh && \
+    echo '  echo "Creating /app/media directory..."' >> /app/docker-entrypoint.sh && \
+    echo '  mkdir -p /app/media' >> /app/docker-entrypoint.sh && \
+    echo '  chown -R nodejs:nodejs /app/media' >> /app/docker-entrypoint.sh && \
+    echo '  chmod -R 755 /app/media' >> /app/docker-entrypoint.sh && \
+    echo 'fi' >> /app/docker-entrypoint.sh && \
+    echo '' >> /app/docker-entrypoint.sh && \
+    echo '# Переключение на пользователя nodejs и запуск приложения' >> /app/docker-entrypoint.sh && \
+    echo 'exec su-exec nodejs "$@"' >> /app/docker-entrypoint.sh && \
+    chmod +x /app/docker-entrypoint.sh
 
-USER nodejs
+# Установка su-exec для безопасного переключения пользователя
+RUN apk add --no-cache su-exec
 
 # Открытие порта
 EXPOSE 3000
 
-# Запуск приложения с инициализацией volume
-CMD ["sh", "-c", "/app/init-volume.sh && npm run start"]
+# Используем entrypoint для исправления прав перед запуском
+# Entrypoint запускается от root, исправляет права на volume, затем переключается на nodejs
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
+# Запуск приложения (будет выполнено от nodejs через entrypoint)
+CMD ["npm", "run", "start"]
