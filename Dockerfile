@@ -87,6 +87,8 @@ RUN mkdir -p ./public ./media
 COPY --from=builder /app/public ./public
 
 # Копирование медиа файлов из builder
+# Примечание: при монтировании Railway Volume на /app/media, содержимое volume имеет приоритет
+# Существующие файлы из Git будут доступны только если volume пустой или не смонтирован
 COPY --from=builder /app/media ./media
 
 # Создание пользователя без прав root для безопасности
