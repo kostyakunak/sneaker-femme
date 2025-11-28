@@ -57,6 +57,20 @@ function validateProductDataBeforeInsert(data: ProductData) {
     'group_id',
     'visibility'
   ];
+
+  // Clean up description field - remove empty blocks and columns without data
+  if (data.description && Array.isArray(data.description)) {
+    data.description = data.description.filter(block =>
+      block &&
+      block.id &&
+      block.size &&
+      block.columns &&
+      Array.isArray(block.columns) &&
+      block.columns.length > 0 &&
+      block.columns.every(col => col && col.id && col.size && col.data)
+    );
+  }
+
   const jsonSchema = getValueSync(
     'createProductDataJsonSchema',
     productDataSchema,

@@ -1,0 +1,17 @@
+{
+  "shop": {
+    "name": "Geass Shoes ™",
+    "currency": "UAH",
+    "language": "uk",
+    "weightUnit": "kg",
+    "timezone": "Europe/Kyiv"
+  },
+  "themeConfig": {
+    "logo": {
+      "src": "/main-logo.jpg",
+      "alt": "Geass Shoes ™",
+      "width": 150,
+      "height": 60
+    }
+  }
+}
