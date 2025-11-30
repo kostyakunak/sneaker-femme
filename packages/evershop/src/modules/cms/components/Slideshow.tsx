@@ -100,6 +100,7 @@ interface SlideshowProps {
     widthValue?: number;
     heightValue?: number;
     heightType?: 'auto' | 'fixed' | 'full';
+    objectPosition?: string;
   };
 }
 
@@ -113,7 +114,8 @@ export default function Slideshow({
     fullWidth = true,
     widthValue = 1920,
     heightValue = 60,
-    heightType = 'fixed'
+    heightType = 'fixed',
+    objectPosition = 'center center'
   }
 }: SlideshowProps) {
   const settings = {
@@ -199,12 +201,12 @@ export default function Slideshow({
                 src={slide.image}
                 alt={slide.headline || 'Slideshow image'}
                 width={slide.width || 1920} // Use individual slide width if available
-                height={slide.height || 0} // Use individual slide height if available
+                height={slide.height || heightValue * 10} // Примерная высота в пикселях для правильного aspect ratio
                 style={{
-                  objectFit: 'cover',
+                  objectFit: 'cover', // Заполняет контейнер, сохраняя пропорции
                   width: '100%',
                   height: '100%',
-                  objectPosition: 'center'
+                  objectPosition: objectPosition // Настраиваемое позиционирование для равномерного обрезания
                 }}
                 sizes="100vw"
                 priority={true}
@@ -250,7 +252,7 @@ export default function Slideshow({
 }
 
 export const query = `
-  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String) {
+  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String, $objectPosition: String) {
     slideshowWidget(
       slides: $slides,
       autoplay: $autoplay,
@@ -260,7 +262,8 @@ export const query = `
       fullWidth: $fullWidth,
       widthValue: $widthValue,
       heightValue: $heightValue,
-      heightType: $heightType
+      heightType: $heightType,
+      objectPosition: $objectPosition
     ) {
       slides {
         id
@@ -281,6 +284,7 @@ export const query = `
       widthValue
       heightValue
       heightType
+      objectPosition
     }
   }
 `;
@@ -308,5 +312,6 @@ export const variables = `{
   fullWidth: getWidgetSetting("fullWidth"),
   widthValue: getWidgetSetting("widthValue"),
   heightValue: getWidgetSetting("heightValue"),
-  heightType: getWidgetSetting("heightType")
+  heightType: getWidgetSetting("heightType"),
+  objectPosition: getWidgetSetting("objectPosition")
 }`;

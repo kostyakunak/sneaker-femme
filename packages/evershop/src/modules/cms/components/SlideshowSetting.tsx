@@ -28,6 +28,7 @@ interface SlideshowSettingProps {
     widthValue?: number;
     heightValue?: number;
     heightType?: 'auto' | 'fixed' | 'full';
+    objectPosition?: string;
   };
 }
 
@@ -43,7 +44,8 @@ export default function SlideshowSetting({
     fullWidth = true,
     widthValue = 1920,
     heightValue = 60,
-    heightType = 'fixed'
+    heightType = 'fixed',
+    objectPosition = 'center center'
   } = slideshowWidget || {};
 
   const { control, setValue, watch } = useFormContext();
@@ -98,6 +100,7 @@ export default function SlideshowSetting({
     // Устанавливаем фиксированную высоту в viewport height для адаптивности
     setValue('settings.heightType', 'fixed');
     setValue('settings.heightValue', 60); // 60vh - хорошая высота для слайдшоу
+    setValue('settings.objectPosition', 'center center'); // Равномерное обрезание со всех сторон
 
     // Process all slides to detect image dimensions if they don't have them yet
     if (currentSlides?.length) {
@@ -308,6 +311,28 @@ export default function SlideshowSetting({
               </p>
             </div>
           )}
+
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-sm mb-2">Image Position (для равномерного обрезания)</label>
+            <select
+              value={watch('settings.objectPosition', objectPosition)}
+              onChange={(e) => setValue('settings.objectPosition', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+            >
+              <option value="center center">Center (равномерно со всех сторон)</option>
+              <option value="top center">Top Center</option>
+              <option value="bottom center">Bottom Center</option>
+              <option value="left center">Left Center</option>
+              <option value="right center">Right Center</option>
+              <option value="top left">Top Left</option>
+              <option value="top right">Top Right</option>
+              <option value="bottom left">Bottom Left</option>
+              <option value="bottom right">Bottom Right</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Определяет, какая часть изображения будет видна при обрезании
+            </p>
+          </div>
         </div>
       </div>
       <div className="mb-4">
@@ -704,7 +729,7 @@ export default function SlideshowSetting({
 }
 
 export const query = `
-  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String) {
+  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String, $objectPosition: String) {
     slideshowWidget(
       slides: $slides,
       autoplay: $autoplay,
@@ -714,7 +739,8 @@ export const query = `
       fullWidth: $fullWidth,
       widthValue: $widthValue,
       heightValue: $heightValue,
-      heightType: $heightType
+      heightType: $heightType,
+      objectPosition: $objectPosition
     ) {
       slides {
         id
@@ -735,6 +761,7 @@ export const query = `
       widthValue
       heightValue
       heightType
+      objectPosition
     }
   }
 `;
@@ -762,5 +789,6 @@ export const variables = `{
   fullWidth: getWidgetSetting("fullWidth"),
   widthValue: getWidgetSetting("widthValue"),
   heightValue: getWidgetSetting("heightValue"),
-  heightType: getWidgetSetting("heightType")
+  heightType: getWidgetSetting("heightType"),
+  objectPosition: getWidgetSetting("objectPosition")
 }`;
