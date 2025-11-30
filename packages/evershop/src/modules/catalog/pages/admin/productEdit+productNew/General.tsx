@@ -76,7 +76,7 @@ const ProductCategory: React.FC<{
   onChange: () => void;
   onUnassign: () => void;
 }> = ({ categoryId, onChange, onUnassign }) => {
-  const { register, setValue } = useFormContext();
+  const { register } = useFormContext();
   const [result] = useQuery({
     query: CategoryQuery,
     variables: {
@@ -95,13 +95,6 @@ const ProductCategory: React.FC<{
   if (fetching) {
     return <span>Loading...</span>;
   }
-
-  // Ensure the category_id is set in the form when categoryId changes
-  React.useEffect(() => {
-    if (categoryId !== undefined) {
-      setValue('category_id', categoryId);
-    }
-  }, [categoryId, setValue]);
 
   return (
     <div>
@@ -132,7 +125,7 @@ const ProductCategory: React.FC<{
           Unassign
         </a>
       </span>
-      <input type="hidden" {...register('category_id')} />
+      <input type="hidden" {...register('category_id')} value={categoryId || ''} />
     </div>
   );
 };
@@ -147,8 +140,7 @@ const CategorySelect: React.FC<{
         };
       }
     | undefined;
-  onCategoryChange?: (categoryId: number | null) => void;
-}> = ({ product, onCategoryChange }) => {
+}> = ({ product }) => {
   const [category, setCategory] = React.useState<{
     categoryId: number;
     uuid?: string;
@@ -158,19 +150,13 @@ const CategorySelect: React.FC<{
   );
   const modal = useModal();
 
-  const { setValue } = useFormContext();
-
   const onSelect = (categoryId, uuid, name) => {
     setCategory({ categoryId, uuid, name });
-    setValue('category_id', categoryId);
-    onCategoryChange?.(categoryId);
     modal.close();
   };
 
   const onUnassign = () => {
     setCategory(null);
-    setValue('category_id', null);
-    onCategoryChange?.(null);
   };
 
   return (
