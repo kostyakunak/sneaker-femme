@@ -32,6 +32,7 @@ export const ProductListItemRender = ({
                 alt={product.image.alt || product.name}
                 width={imageWidth || 120}
                 height={imageHeight || 120}
+                objectFit="cover"
                 loading="lazy"
                 sizes="(max-width: 768px) 100vw, 33vw" // Assume 3 columns on larger screens
                 className="transition-transform duration-300 ease-in-out group-hover:scale-105 rounded-lg"
@@ -152,6 +153,7 @@ export const ProductListItemRender = ({
               alt={product.image.alt || product.name}
               width={imageWidth || 120}
               height={imageHeight || 120}
+              objectFit="cover"
               sizes="(max-width: 768px) 100vw, 33vw" // Assume 3 columns on larger screens
               className="transition-transform duration-500 ease-in-out group-hover:scale-110"
             />
