@@ -130,7 +130,7 @@ const ProductCategory: React.FC<{
           Unassign
         </a>
       </span>
-      <input type="hidden" {...register('category_id')} value={categoryId} />
+      <input type="hidden" {...register('category_id')} />
     </div>
   );
 };
@@ -145,7 +145,8 @@ const CategorySelect: React.FC<{
         };
       }
     | undefined;
-}> = ({ product }) => {
+  onCategoryChange?: (categoryId: number | null) => void;
+}> = ({ product, onCategoryChange }) => {
   const [category, setCategory] = React.useState<{
     categoryId: number;
     uuid?: string;
@@ -155,17 +156,24 @@ const CategorySelect: React.FC<{
   );
   const modal = useModal();
 
-  const { setValue } = useFormContext();
+  const { setValue, register } = useFormContext();
+
+  // Register the category_id field
+  React.useEffect(() => {
+    register('category_id');
+  }, [register]);
 
   const onSelect = (categoryId, uuid, name) => {
     setCategory({ categoryId, uuid, name });
     setValue('category_id', categoryId);
+    onCategoryChange?.(categoryId);
     modal.close();
   };
 
   const onUnassign = () => {
     setCategory(null);
     setValue('category_id', null);
+    onCategoryChange?.(null);
   };
 
   return (
