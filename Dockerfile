@@ -80,53 +80,28 @@ COPY --from=builder /app/translations ./translations
 # Проверяем, что директория существует перед копированием
 COPY --from=builder /app/.evershop ./.evershop
 
-# Создание директорий public и media
-RUN mkdir -p ./public ./media
+# Создание директорий
+RUN mkdir -p ./public ./media-template
 
 # Копирование статических файлов (логотипы и т.д.)
 COPY --from=builder /app/public ./public
 
-# Копирование медиа файлов из builder
-# Примечание: при монтировании Railway Volume на /app/media, содержимое volume имеет приоритет
-# Существующие файлы из Git будут доступны только если volume пустой или не смонтирован
-COPY --from=builder /app/media ./media
+# Копирование медиа файлов в template директорию (не в volume)
+COPY --from=builder /app/media ./media-template
+
+# Копирование и настройка скрипта инициализации media
+COPY scripts/init-media.sh ./init-media.sh
+RUN chmod +x ./init-media.sh
 
 # Создание пользователя без прав root для безопасности
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
-# Создание entrypoint скрипта, который исправляет права на volume перед запуском
-# Этот скрипт должен запускаться от root, чтобы иметь возможность изменить права
-RUN echo '#!/bin/sh' > /app/docker-entrypoint.sh && \
-    echo 'set -e' >> /app/docker-entrypoint.sh && \
-    echo '' >> /app/docker-entrypoint.sh && \
-    echo '# Исправление прав доступа на volume /app/media' >> /app/docker-entrypoint.sh && \
-    echo 'if [ -d /app/media ]; then' >> /app/docker-entrypoint.sh && \
-    echo '  echo "Fixing permissions on /app/media volume..."' >> /app/docker-entrypoint.sh && \
-    echo '  chown -R nodejs:nodejs /app/media' >> /app/docker-entrypoint.sh && \
-    echo '  chmod -R 755 /app/media' >> /app/docker-entrypoint.sh && \
-    echo '  echo "Permissions fixed. Media volume ready."' >> /app/docker-entrypoint.sh && \
-    echo 'else' >> /app/docker-entrypoint.sh && \
-    echo '  echo "Creating /app/media directory..."' >> /app/docker-entrypoint.sh && \
-    echo '  mkdir -p /app/media' >> /app/docker-entrypoint.sh && \
-    echo '  chown -R nodejs:nodejs /app/media' >> /app/docker-entrypoint.sh && \
-    echo '  chmod -R 755 /app/media' >> /app/docker-entrypoint.sh && \
-    echo 'fi' >> /app/docker-entrypoint.sh && \
-    echo '' >> /app/docker-entrypoint.sh && \
-    echo '# Переключение на пользователя nodejs и запуск приложения' >> /app/docker-entrypoint.sh && \
-    echo 'exec su-exec nodejs "$@"' >> /app/docker-entrypoint.sh && \
-    chmod +x /app/docker-entrypoint.sh
-
-# Установка su-exec для безопасного переключения пользователя
-RUN apk add --no-cache su-exec
+USER nodejs
 
 # Открытие порта
 EXPOSE 3000
 
-# Используем entrypoint для исправления прав перед запуском
-# Entrypoint запускается от root, исправляет права на volume, затем переключается на nodejs
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
-
-# Запуск приложения (будет выполнено от nodejs через entrypoint)
-CMD ["npm", "run", "start"]
+# Запуск скрипта инициализации media и приложения
+CMD ["./init-media.sh"]
