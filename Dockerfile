@@ -60,7 +60,7 @@ RUN npm prune --omit=dev
 FROM node:20-alpine AS production
 
 # Invalidate cache for rebuild
-RUN echo "Rebuild cache invalidation: 2025-11-30-v2"
+RUN echo "Rebuild cache invalidation: 2025-11-30-v3"
 
 WORKDIR /app
 
