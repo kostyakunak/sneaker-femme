@@ -76,7 +76,7 @@ const ProductCategory: React.FC<{
   onChange: () => void;
   onUnassign: () => void;
 }> = ({ categoryId, onChange, onUnassign }) => {
-  const { register } = useFormContext();
+  const { register, setValue } = useFormContext();
   const [result] = useQuery({
     query: CategoryQuery,
     variables: {
@@ -95,6 +95,12 @@ const ProductCategory: React.FC<{
   if (fetching) {
     return <span>Loading...</span>;
   }
+
+  // Ensure the category_id is set in the form
+  React.useEffect(() => {
+    setValue('category_id', categoryId);
+  }, [categoryId, setValue]);
+
   return (
     <div>
       {data.category.path.map((item, index) => (
@@ -140,14 +146,26 @@ const CategorySelect: React.FC<{
       }
     | undefined;
 }> = ({ product }) => {
-  const [category, setCategory] = React.useState(
+  const [category, setCategory] = React.useState<{
+    categoryId: number;
+    uuid?: string;
+    name?: string;
+  } | null>(
     product ? product.category : null
   );
   const modal = useModal();
 
-  const onSelect = (categoryId) => {
-    setCategory({ categoryId });
+  const { setValue } = useFormContext();
+
+  const onSelect = (categoryId, uuid, name) => {
+    setCategory({ categoryId, uuid, name });
+    setValue('category_id', categoryId);
     modal.close();
+  };
+
+  const onUnassign = () => {
+    setCategory(null);
+    setValue('category_id', null);
   };
 
   return (
@@ -158,7 +176,7 @@ const CategorySelect: React.FC<{
           <ProductCategory
             categoryId={category.categoryId}
             onChange={() => modal.open()}
-            onUnassign={() => setCategory(null)}
+            onUnassign={onUnassign}
           />
         </div>
       )}
