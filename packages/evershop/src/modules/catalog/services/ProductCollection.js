@@ -19,6 +19,8 @@ export class ProductCollection {
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
       this.baseQuery.andWhere('product.status', '=', 1);
+      // Filter to show only simple products (without variant_group_id) on frontend by default
+      this.baseQuery.andWhere('product.variant_group_id', 'IS NULL', null);
       if (getConfig('catalog.showOutOfStockProduct', false) === false) {
         this.baseQuery
           .andWhere('product_inventory.manage_stock', '=', false)
