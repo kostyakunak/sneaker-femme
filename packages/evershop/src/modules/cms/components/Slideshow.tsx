@@ -147,54 +147,51 @@ export default function Slideshow({
     return null;
   }
 
-  const containerClasses = ['slideshow-widget', 'relative', 'w-full'].join(' ');
-
-  // Определяем стили контейнера в зависимости от типа высоты
-  const getContainerStyle = (): React.CSSProperties => {
-    const baseStyle = {
-      maxWidth: '100%'
-    };
+  // Определяем классы контейнера в зависимости от типа высоты
+  const getContainerClasses = (): string => {
+    const baseClasses = ['slideshow-widget', 'relative', 'w-full', 'max-w-full'];
 
     switch (heightType) {
       case 'fixed':
-        // Используем viewport height для адаптивности на разных устройствах
-        return {
-          ...baseStyle,
-          height: `${heightValue}vh`,
-          overflow: 'hidden'
-        };
+        // Адаптивная высота: 75vh для больших экранов, 65vh для меньших
+        return [...baseClasses, 'h-[65vh]', 'md:h-[70vh]', 'lg:h-[75vh]', 'overflow-hidden'].join(' ');
       case 'full':
-        return {
-          ...baseStyle,
-          height: '100vh',
-          overflow: 'hidden'
-        };
+        return [...baseClasses, 'h-screen', 'overflow-hidden'].join(' ');
       case 'auto':
       default:
-        return {
-          ...baseStyle,
-          height: 'auto'
-        };
+        return [...baseClasses, 'h-auto'].join(' ');
     }
   };
 
-  const containerStyle = getContainerStyle();
+  const containerClasses = getContainerClasses();
 
-  const sliderStyle: React.CSSProperties = {
-    height: heightType === 'auto' ? 'auto' : `${heightValue}vh`
+  const getSliderClasses = (): string => {
+    if (heightType === 'auto') {
+      return 'h-auto';
+    }
+    // Адаптивная высота: 75vh для больших экранов, 65vh для меньших
+    return 'h-[65vh] md:h-[70vh] lg:h-[75vh]';
   };
 
+  const getSlideClasses = (): string => {
+    const baseClasses = ['relative', 'slide__wrapper', '!block'];
+    if (heightType === 'auto') {
+      return [...baseClasses, 'h-auto'].join(' ');
+    }
+    // Адаптивная высота: 75vh для больших экранов, 65vh для меньших
+    return [...baseClasses, 'h-[65vh]', 'md:h-[70vh]', 'lg:h-[75vh]'].join(' ');
+  };
+
+  const sliderClasses = getSliderClasses();
+  const slideClasses = getSlideClasses();
+
   return (
-    <div className={containerClasses} style={containerStyle}>
-      <SliderComponent {...settings} style={sliderStyle}>
+    <div className={containerClasses}>
+      <SliderComponent {...settings} className={sliderClasses}>
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="relative slide__wrapper !block"
-            style={{
-              display: 'block',
-              height: heightType === 'auto' ? 'auto' : `${heightValue}vh`
-            }}
+            className={slideClasses}
           >
             <div className="relative w-full h-full">
               <Image
