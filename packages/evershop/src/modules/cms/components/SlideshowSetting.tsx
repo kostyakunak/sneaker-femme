@@ -42,8 +42,8 @@ export default function SlideshowSetting({
     dots = true,
     fullWidth = true,
     widthValue = 1920,
-    heightValue = 800,
-    heightType = 'auto'
+    heightValue = 60,
+    heightType = 'fixed'
   } = slideshowWidget || {};
 
   const { control, setValue, watch } = useFormContext();
@@ -95,8 +95,9 @@ export default function SlideshowSetting({
         : Boolean(currentFullWidth);
     setValue('settings.fullWidth', handleFullWidth);
 
-    // Always use adaptive height for the slideshow
-    setValue('settings.heightType', 'auto');
+    // Устанавливаем фиксированную высоту в viewport height для адаптивности
+    setValue('settings.heightType', 'fixed');
+    setValue('settings.heightValue', 60); // 60vh - хорошая высота для слайдшоу
 
     // Process all slides to detect image dimensions if they don't have them yet
     if (currentSlides?.length) {
@@ -256,6 +257,57 @@ export default function SlideshowSetting({
               </label>
             </div> */}
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="fullWidth"
+                checked={Boolean(currentFullWidth)}
+                onChange={(e) => {
+                  const isChecked = Boolean(e.target.checked);
+                  setValue('settings.fullWidth', isChecked);
+                }}
+                className="mr-2 h-4 w-4"
+              />
+              <label htmlFor="fullWidth" className="text-sm">
+                Full Width Slideshow
+              </label>
+            </div>
+          </div>
+
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-sm mb-2">Height Type</label>
+            <select
+              value={watch('settings.heightType', heightType)}
+              onChange={(e) => setValue('settings.heightType', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+            >
+              <option value="auto">Auto (Adaptive)</option>
+              <option value="fixed">Fixed Height (vh)</option>
+              <option value="full">Full Viewport Height</option>
+            </select>
+          </div>
+
+          {watch('settings.heightType', heightType) === 'fixed' && (
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-sm mb-2">Height (vh - viewport height)</label>
+              <input
+                type="number"
+                value={watch('settings.heightValue', heightValue)}
+                onChange={(e) => setValue('settings.heightValue', parseInt(e.target.value) || 60)}
+                className="w-full p-2 border border-gray-300 rounded"
+                min="20"
+                max="80"
+                placeholder="60"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                vh = % от высоты экрана. 60vh = 60% от высоты viewport
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <div className="mb-4">
@@ -652,13 +704,17 @@ export default function SlideshowSetting({
 }
 
 export const query = `
-  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean) {
+  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String) {
     slideshowWidget(
-      slides: $slides, 
-      autoplay: $autoplay, 
-      autoplaySpeed: $autoplaySpeed, 
-      arrows: $arrows, 
+      slides: $slides,
+      autoplay: $autoplay,
+      autoplaySpeed: $autoplaySpeed,
+      arrows: $arrows,
       dots: $dots,
+      fullWidth: $fullWidth,
+      widthValue: $widthValue,
+      heightValue: $heightValue,
+      heightType: $heightType
     ) {
       slides {
         id
@@ -675,6 +731,10 @@ export const query = `
       autoplaySpeed
       arrows
       dots
+      fullWidth
+      widthValue
+      heightValue
+      heightType
     }
   }
 `;
@@ -699,4 +759,8 @@ export const variables = `{
   autoplaySpeed: getWidgetSetting("autoplaySpeed"),
   arrows: getWidgetSetting("arrows"),
   dots: getWidgetSetting("dots"),
+  fullWidth: getWidgetSetting("fullWidth"),
+  widthValue: getWidgetSetting("widthValue"),
+  heightValue: getWidgetSetting("heightValue"),
+  heightType: getWidgetSetting("heightType")
 }`;

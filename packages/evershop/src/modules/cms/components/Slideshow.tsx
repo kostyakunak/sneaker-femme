@@ -96,6 +96,10 @@ interface SlideshowProps {
     autoplaySpeed?: number;
     arrows?: boolean;
     dots?: boolean;
+    fullWidth?: boolean;
+    widthValue?: number;
+    heightValue?: number;
+    heightType?: 'auto' | 'fixed' | 'full';
   };
 }
 
@@ -105,7 +109,11 @@ export default function Slideshow({
     autoplay = true,
     autoplaySpeed = 3000,
     arrows = true,
-    dots = true
+    dots = true,
+    fullWidth = true,
+    widthValue = 1920,
+    heightValue = 60,
+    heightType = 'fixed'
   }
 }: SlideshowProps) {
   const settings = {
@@ -119,7 +127,7 @@ export default function Slideshow({
     arrows: Boolean(arrows),
     fade: false,
     pauseOnHover: true,
-    adaptiveHeight: true,
+    adaptiveHeight: heightType === 'auto', // Отключаем адаптивную высоту для фиксированной
     nextArrow: arrows ? <NextArrow /> : undefined,
     prevArrow: arrows ? <PrevArrow /> : undefined,
     customPaging: function (i: number) {
@@ -139,13 +147,39 @@ export default function Slideshow({
 
   const containerClasses = ['slideshow-widget', 'relative', 'w-full'].join(' ');
 
-  const containerStyle: React.CSSProperties = {
-    height: 'auto',
-    maxWidth: '100%'
+  // Определяем стили контейнера в зависимости от типа высоты
+  const getContainerStyle = (): React.CSSProperties => {
+    const baseStyle = {
+      maxWidth: '100%'
+    };
+
+    switch (heightType) {
+      case 'fixed':
+        // Используем viewport height для адаптивности на разных устройствах
+        return {
+          ...baseStyle,
+          height: `${heightValue}vh`,
+          overflow: 'hidden'
+        };
+      case 'full':
+        return {
+          ...baseStyle,
+          height: '100vh',
+          overflow: 'hidden'
+        };
+      case 'auto':
+      default:
+        return {
+          ...baseStyle,
+          height: 'auto'
+        };
+    }
   };
 
+  const containerStyle = getContainerStyle();
+
   const sliderStyle: React.CSSProperties = {
-    height: 'auto' // Adaptive height for slider
+    height: heightType === 'auto' ? 'auto' : `${heightValue}vh`
   };
 
   return (
@@ -154,8 +188,11 @@ export default function Slideshow({
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="relative lg:h-auto slide__wrapper !block"
-            style={{ display: 'block' }}
+            className="relative slide__wrapper !block"
+            style={{
+              display: 'block',
+              height: heightType === 'auto' ? 'auto' : `${heightValue}vh`
+            }}
           >
             <div className="relative w-full h-full">
               <Image
@@ -213,13 +250,17 @@ export default function Slideshow({
 }
 
 export const query = `
-  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean) {
+  query Query($slides: [SlideInput], $autoplay: Boolean, $autoplaySpeed: Int, $arrows: Boolean, $dots: Boolean, $fullWidth: Boolean, $widthValue: Int, $heightValue: Int, $heightType: String) {
     slideshowWidget(
       slides: $slides,
       autoplay: $autoplay,
       autoplaySpeed: $autoplaySpeed,
       arrows: $arrows,
-      dots: $dots
+      dots: $dots,
+      fullWidth: $fullWidth,
+      widthValue: $widthValue,
+      heightValue: $heightValue,
+      heightType: $heightType
     ) {
       slides {
         id
@@ -236,6 +277,10 @@ export const query = `
       autoplaySpeed
       arrows
       dots
+      fullWidth
+      widthValue
+      heightValue
+      heightType
     }
   }
 `;
@@ -259,5 +304,9 @@ export const variables = `{
   autoplay: getWidgetSetting("autoplay"),
   autoplaySpeed: getWidgetSetting("autoplaySpeed"),
   arrows: getWidgetSetting("arrows"),
-  dots: getWidgetSetting("dots")
+  dots: getWidgetSetting("dots"),
+  fullWidth: getWidgetSetting("fullWidth"),
+  widthValue: getWidgetSetting("widthValue"),
+  heightValue: getWidgetSetting("heightValue"),
+  heightType: getWidgetSetting("heightType")
 }`;
