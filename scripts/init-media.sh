@@ -36,4 +36,13 @@ echo "Permissions fixed. Media volume ready."
 
 # Start the application
 echo "Starting application..."
+echo "Checking if npm is available..."
+which npm || echo "npm not found"
+echo "Checking if node is available..."
+which node || echo "node not found"
+echo "Checking package.json..."
+ls -la package.json || echo "package.json not found"
+echo "Checking if dist directory exists..."
+ls -la packages/evershop/dist/bin/start/ || echo "dist directory not found"
+echo "Starting npm run start..."
 exec npm run start
