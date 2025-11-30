@@ -3,7 +3,7 @@
 echo "Checking media volume..."
 
 # Check if media volume is empty
-if [ ! -d "/app/media/main-logo.jpg" ] && [ ! -d "/app/media/catalog" ]; then
+if [ ! -f "/app/media/main-logo.jpg" ] && [ ! -d "/app/media/catalog" ]; then
     echo "Media volume is empty. Initializing from template..."
     # Copy media files from template directory to volume
     if [ -d "/app/media-template" ]; then
