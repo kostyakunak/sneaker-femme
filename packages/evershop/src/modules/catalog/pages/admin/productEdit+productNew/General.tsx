@@ -96,9 +96,11 @@ const ProductCategory: React.FC<{
     return <span>Loading...</span>;
   }
 
-  // Ensure the category_id is set in the form
+  // Ensure the category_id is set in the form when categoryId changes
   React.useEffect(() => {
-    setValue('category_id', categoryId);
+    if (categoryId !== undefined) {
+      setValue('category_id', categoryId);
+    }
   }, [categoryId, setValue]);
 
   return (
@@ -156,12 +158,7 @@ const CategorySelect: React.FC<{
   );
   const modal = useModal();
 
-  const { setValue, register } = useFormContext();
-
-  // Register the category_id field
-  React.useEffect(() => {
-    register('category_id');
-  }, [register]);
+  const { setValue } = useFormContext();
 
   const onSelect = (categoryId, uuid, name) => {
     setCategory({ categoryId, uuid, name });
@@ -181,11 +178,13 @@ const CategorySelect: React.FC<{
       <div className="mb-2">Category</div>
       {category && (
         <div className="border rounded border-[#c9cccf] mb-2 p-2">
-          <ProductCategory
-            categoryId={category.categoryId}
-            onChange={() => modal.open()}
-            onUnassign={onUnassign}
-          />
+          {category && (
+            <ProductCategory
+              categoryId={category.categoryId}
+              onChange={() => modal.open()}
+              onUnassign={onUnassign}
+            />
+          )}
         </div>
       )}
       {!category && (
