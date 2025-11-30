@@ -59,6 +59,9 @@ RUN npm prune --omit=dev
 # Production образ
 FROM node:20-alpine AS production
 
+# Invalidate cache for rebuild
+RUN echo "Rebuild cache invalidation: 2025-11-30-v2"
+
 WORKDIR /app
 
 # Отключаем husky в production
