@@ -11,6 +11,7 @@ dist
 !extensions/resend
 !extensions/sendgrid
 !extensions/product_review
+!extensions/supplier_sync
 /themes
 .idea/*
 .evershop
@@ -35,3 +36,6 @@ cypress
 .prettierrc
 mysqlToPostgres.js
 /docs
+# Local dumps
+*.sql
+*.tar.gz

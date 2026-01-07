@@ -116,7 +116,13 @@ async function cancelOrder(uuid: string, reason: string | undefined) {
       reason,
       connection
     );
-    await hookable(reStockAfterCancel, { order })(order.order_id, connection);
+    const reStockAfterCancellation = getConfig(
+      'oms.order.reStockAfterCancellation',
+      true
+    );
+    if (order.payment_status === 'paid' && reStockAfterCancellation) {
+      await hookable(reStockAfterCancel, { order })(order.order_id, connection);
+    }
     await commit(connection);
   } catch (err) {
     error(err);

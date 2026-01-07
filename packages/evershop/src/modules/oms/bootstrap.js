@@ -267,6 +267,13 @@ export default () => {
           isDefault: true,
           isCancelable: true
         },
+        authorized: {
+          name: 'Authorized',
+          badge: 'default',
+          progress: 'incomplete', // User specified 'progress: incomplete'
+          isDefault: false,
+          isCancelable: true
+        },
         paid: {
           name: 'Paid',
           badge: 'success',
@@ -315,6 +322,8 @@ export default () => {
       },
       psoMapping: {
         'pending:pending': 'new',
+        'authorized:pending': 'new',
+        'authorized:*': 'processing',
         'pending:*': 'processing',
         'paid:*': 'processing',
         'paid:delivered': 'completed',
