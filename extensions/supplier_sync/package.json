@@ -3,5 +3,6 @@
     "version": "0.0.1",
     "description": "Syncs inventory with supplier and confirms authorized orders",
     "main": "index.js",
+    "type": "module",
     "license": "MIT"
 }

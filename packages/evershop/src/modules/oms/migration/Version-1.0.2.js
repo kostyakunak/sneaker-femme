@@ -16,7 +16,7 @@ export default async (connection) => {
     AS $$
     BEGIN
       UPDATE product_inventory pi
-      SET qty = qty - oi.qty
+      SET qty = pi.qty - oi.qty
       FROM order_item oi
       WHERE oi.order_item_order_id = NEW.order_id
         AND oi.product_id = pi.product_inventory_product_id

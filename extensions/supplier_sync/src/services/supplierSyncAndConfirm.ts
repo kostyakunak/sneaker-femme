@@ -3,91 +3,121 @@ import {
     select,
     getConnection,
     insert,
-    update,
     startTransaction,
     commit,
     rollback
 } from '@evershop/postgres-query-builder';
-import { pool } from '@evershop/evershop/src/lib/postgres/connection'; // Direct import to ensure we get the instance? Or via alias. Trying relative fallback if alias fails at build time, but alias is safer for extension.
-// Actually, package.json alias is "@evershop/evershop/lib/postgres".
-// Let's use that.
-// Wait, TS might complain if types aren't perfect in dev, but runtime is key.
-// "import { pool } from '@evershop/evershop/lib/postgres';"
-import { updatePaymentStatus } from '@evershop/evershop/src/modules/oms/services/updatePaymentStatus'; // Using src path to avoid types issues? No, use the package export.
-// Actually, since I'm in the monorepo, I can import from packages directly if I want to be safe in dev.
-// ../../../packages/evershop/src/modules/oms/services/updatePaymentStatus
-// But cleaner is @evershop/evershop/...
-// Let's try to stick to relative imports if I can't guarantee the build step happening before run.
-// Since this is "evershop-dev", it's likely using direct source.
-// I will use relative imports to avoid "module not found" if "dist" is not built.
-// Path from extensions/supplier_sync/src/services/ to packages/evershop/src/... is:
-// ../../../../../packages/evershop/src/...
-import { info, error } from '@evershop/evershop/src/lib/log/logger';
-import cancelOrder from '@evershop/evershop/src/modules/oms/services/cancelOrder';
+import { pool } from '@evershop/evershop/lib/postgres';
+import { updatePaymentStatus, cancelOrder } from '@evershop/evershop/oms/services';
+import { info, error } from '@evershop/evershop/lib/log';
+// const info = console.log;
+// const error = console.error;
+import { getConfig } from '@evershop/evershop/lib/util/getConfig';
+import { getSetting } from '@evershop/evershop/setting/services';
 
-export async function supplierSyncAndConfirm() {
-    const connection = await getConnection(pool);
-
-    // Advisory lock: 888888
-    const lock = await select().from('pg_try_advisory_lock(888888)').execute(connection);
-    if (!lock[0].pg_try_advisory_lock) {
-        info('Supplier sync already running, skipping');
-        return;
-    }
-
+export async function supplierSyncAndConfirm(stripeClient = null) {
+    let lockConn;
     try {
+        lockConn = await getConnection(pool);
+        // Advisory lock: 888888
+        const lockRes = await execute(lockConn, 'SELECT pg_try_advisory_lock(888888) AS locked');
+        if (!lockRes.rows[0].locked) {
+            info('Supplier sync already running, skipping');
+            if (lockConn && typeof lockConn.release === 'function') {
+                lockConn.release();
+            }
+            return;
+        }
+
         info('Starting Supplier Sync & Confirmation Job...');
 
+        // Initialize Stripe
+        let stripe = stripeClient;
+        if (!stripe) {
+            const stripeConfig = getConfig('system.stripe', {});
+            let stripeSecretKey;
+            if (stripeConfig.secretKey) {
+                stripeSecretKey = stripeConfig.secretKey;
+            } else {
+                stripeSecretKey = await getSetting('stripeSecretKey', '');
+            }
+
+            if (!stripeSecretKey) {
+                throw new Error('Stripe Secret Key not found in config or settings');
+            }
+
+            // Dynamic import to avoid load issues during testing or if package is missing
+            const { default: stripePackage } = await import('stripe');
+            stripe = new stripePackage(stripeSecretKey, {
+                apiVersion: '2020-08-27'
+            });
+        }
+
         // 1. Mock Supplier Update
-        // In real world: fetch(API) -> update product_inventory
         info('Mocking Supplier Inventory Sync...');
 
         // 2. Fetch Authorized Orders (FIFO)
-        const authorizedOrders = await select()
+        const orders = await select()
             .from('order')
-            .where('payment_status', '=', 'authorized')
-            // .and('shipment_status', '=', 'pending') // Optional check
             .orderBy('created_at', 'ASC')
-            .execute(connection);
+            .where('payment_status', '=', 'authorized')
+            .execute(lockConn, false);
 
-        info(`Found ${authorizedOrders.length} authorized orders to process.`);
+        info(`Found ${orders.length} authorized orders to process.`);
 
-        for (const order of authorizedOrders) {
-            await processOrder(order);
+        for (const order of orders) {
+            await processOrder(order, stripe);
         }
 
     } catch (e) {
-        error('Error in supplierSyncAndConfirm', e);
+        error(e);
     } finally {
-        await execute(connection, 'SELECT pg_advisory_unlock(888888)');
+        if (lockConn) {
+            try {
+                await execute(lockConn, 'SELECT pg_advisory_unlock(888888)');
+            } catch (unlockError) {
+                error(unlockError);
+            }
+            if (typeof lockConn.release === 'function') {
+                lockConn.release();
+            }
+        }
     }
 }
 
-async function processOrder(order) {
-    const connection = await getConnection(pool); // Get fresh connection/client from pool?
-    // Note: getConnection returns a client. Ideally allow parallel checks, or use single connection?
-    // Since we are locked, we can use one connection sequentially.
-    // But `processOrder` modifies DB.
-
+async function processOrder(order, stripe) {
+    let connection;
     try {
-        await startTransaction(connection);
+        connection = await getConnection(pool);
 
+        // 1. READ Data (No transaction or short read-locked)
         // Fetch Items
         const items = await select()
             .from('order_item')
             .where('order_item_order_id', '=', order.order_id)
-            .execute(connection);
+            .execute(connection, false);
 
-        let canFulfill = true;
+        // Fetch Transaction ID (Strict: latest authorize action)
+        const transQuery = select().from('payment_transaction');
+        transQuery.where('payment_transaction_order_id', '=', order.order_id)
+            .and('transaction_type', '=', 'online')
+            .and('payment_action', '=', 'authorize');
+
+        transQuery.orderBy('created_at', 'DESC').limit(0, 1);
+        const transactions = await transQuery.execute(connection, false);
+
+        const paymentIntentId = transactions[0] ? transactions[0].transaction_id : null;
+        if (!paymentIntentId) {
+            throw new Error(`No payment transaction found for authorized order #${order.order_number}`);
+        }
 
         // Check Stock
+        let canFulfill = true;
         for (const item of items) {
-            // We check against `product_inventory` table.
-            // Crucially, we assume the sync step updated this table.
             const inventory = await select()
                 .from('product_inventory')
                 .where('product_inventory_product_id', '=', item.product_id)
-                .execute(connection);
+                .execute(connection, false);
 
             const qtyAvailable = inventory[0] ? inventory[0].qty : 0;
             if (qtyAvailable < item.qty) {
@@ -96,61 +126,96 @@ async function processOrder(order) {
             }
         }
 
+        // RELEASE connection before networking
+        connection.release();
+        connection = null;
+
+        // 2. NETWORKING (Stripe)
+        let success = false;
         if (canFulfill) {
-            // CAPTURE
-            // Mock capture logic
-            info(`Capturing payment for Order #${order.order_number}`);
-
-            // This function call triggers the DB trigger `reduce_product_stock_when_order_paid`
-            await updatePaymentStatus(order.order_id, 'paid', connection);
-
-            await insert('order_activity').given({
-                order_activity_order_id: order.order_id,
-                comment: 'Automated: Stock Confirmed & Payment Captured',
-                customer_notified: 1
-            }).execute(connection);
-
+            info(`Capturing payment for Order #${order.order_number} (PI: ${paymentIntentId})`);
+            const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId, {}, {
+                idempotencyKey: `capture-${order.uuid}`
+            });
+            if (paymentIntent.status === 'succeeded') {
+                success = true;
+            } else {
+                throw new Error(`Stripe Capture failed. Status: ${paymentIntent.status}`);
+            }
         } else {
-            // VOID / CANCEL
-            info(`Voiding/Canceling Order #${order.order_number} - Out of Stock`);
-
-            // Mock void logic
-
-            // Cancel (reason "Out of stock")
-            // Since status is 'authorized' != 'paid', our modified `cancelOrder` will NOT restock.
-            // But we pass connection. `cancelOrder` handles its own transaction?
-            // `cancelOrder` calls `startTransaction(connection)`. 
-            // If we are already in transaction, nested might fail depending on specific driver support.
-            // Postgres supports SAVEPOINT. Does `@evershop/postgres-query-builder` support nested?
-            // Looking at `cancelOrder.ts`: it calls `getConnection(pool)` internally!
-            // So it uses a DIFFERENT connection?
-            // If so, our lock on `product_inventory` (if we had one) wouldn't help.
-            // But we rely on atomic update in `updatePaymentStatus` or `cancelOrder`.
-            // Let's just call `cancelOrder` completely separately to avoid transaction nesting issues
-            // because `cancelOrder` is self-contained.
-
-            // We commit our check transaction (readonly mostly) or just rollback it?
-            // Actually checking stock didn't modify anything.
-            // So we can commit/rollback.
-            // BUT `updatePaymentStatus` also takes `connection`.
-            // Let's check `updatePaymentStatus` signature import.
-            // It expects `connection`.
-
-            // Reuse connection for `updatePaymentStatus`.
-            // But for `cancelOrder`...
-            // `cancelOrder` source: `const connection = await getConnection(pool);` inside.
-            // It does NOT take connection as arg.
+            info(`Voiding/Canceling Order #${order.order_number} - Out of Stock (PI: ${paymentIntentId})`);
+            await stripe.paymentIntents.cancel(paymentIntentId, {}, {
+                idempotencyKey: `cancel-${order.uuid}`
+            });
+            success = true;
         }
 
-        await commit(connection);
+        // 3. WRITE Data (Short transaction)
+        if (success) {
+            connection = await getConnection(pool);
+            await startTransaction(connection);
 
-        // Execute cancel outside logic transaction if failing
-        if (!canFulfill) {
-            await cancelOrder(order.uuid, 'Out of stock (Supplier Sync)');
+            if (canFulfill) {
+                // Update to PAID and PROCESSING (standard flow)
+                await execute(
+                    connection,
+                    `UPDATE "order" SET 
+                        payment_status = 'paid', 
+                        status = 'processing', 
+                        updated_at = NOW() 
+                     WHERE order_id = ${order.order_id}`
+                );
+
+                await insert('order_activity').given({
+                    order_activity_order_id: order.order_id,
+                    comment: `Automated: Stock Confirmed & Payment Captured (Stripe PI: ${paymentIntentId}). Status: processing.`,
+                    customer_notified: 1
+                }).execute(connection, false);
+            } else {
+                // Update to CANCELED
+                await execute(
+                    connection,
+                    `UPDATE "order" SET 
+                        status = 'canceled', 
+                        shipment_status = 'canceled', 
+                        payment_status = 'canceled', 
+                        updated_at = NOW() 
+                     WHERE order_id = ${order.order_id}`
+                );
+
+                await insert('order_activity').given({
+                    order_activity_order_id: order.order_id,
+                    comment: `Order canceled Out of stock (Supplier Sync)`,
+                    customer_notified: 0
+                }).execute(connection, false);
+            }
+
+            await commit(connection);
+            info(`Order #${order.order_number} processed successfully (${canFulfill ? 'Captured' : 'Canceled'}).`);
         }
 
     } catch (e) {
-        await rollback(connection);
-        error(`Failed to process order ${order.order_number}`, e);
+        if (connection) {
+            try {
+                // @ts-ignore
+                if (connection.INTRANSACTION) {
+                    await rollback(connection);
+                }
+            } catch (rbError) {
+                error(rbError);
+            }
+        }
+        error(e);
+    } finally {
+        if (connection && typeof connection.release === 'function') {
+            try {
+                // @ts-ignore
+                if (connection._released !== true) {
+                    connection.release();
+                }
+            } catch (e) {
+                // Ignore double release Errors
+            }
+        }
     }
 }

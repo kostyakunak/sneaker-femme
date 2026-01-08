@@ -76,7 +76,7 @@ export default async (request, response, next) => {
           })
           .execute(connection);
 
-        if (!transaction) {
+        if (order.payment_status !== 'paid') {
           await updatePaymentStatus(order.order_id, 'paid', connection);
 
           // Add an activity log
