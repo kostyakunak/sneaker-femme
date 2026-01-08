@@ -5,14 +5,14 @@ import React from 'react';
 
 interface InventoryProps {
   product:
-    | {
-        inventory: {
-          qty: number;
-          stockAvailability: number;
-          manageStock: number;
-        };
-      }
-    | undefined;
+  | {
+    inventory: {
+      qty: number;
+      stockAvailability: number;
+      manageStock: number;
+    };
+  }
+  | undefined;
 }
 export default function Inventory({ product }: InventoryProps) {
   const inventory = product?.inventory || {
@@ -52,6 +52,12 @@ export default function Inventory({ product }: InventoryProps) {
           defaultValue={inventory.qty}
           placeholder="Quantity"
           label="Quantity"
+          readOnly
+          helperText={(
+            <span className="text-interactive">
+              {_('Synced from Supplier')}
+            </span>
+          )}
           required
         />
       </Card.Session>

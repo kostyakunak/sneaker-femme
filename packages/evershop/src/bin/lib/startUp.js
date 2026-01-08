@@ -39,8 +39,10 @@ export const start = async function start(context, cb) {
     // Get the configuration (nodeconfig)
     validateConfiguration(config);
   } catch (e) {
+    console.error('❌ Error during startUp bootstrap phase:');
+    console.error(e);
     error(e);
-    process.exit(0);
+    process.exit(1);
   }
   process.env.ALLOW_CONFIG_MUTATIONS = false;
 
@@ -48,8 +50,10 @@ export const start = async function start(context, cb) {
   try {
     await migrate(modules);
   } catch (e) {
+    console.error('❌ Error during startUp migration phase:');
+    console.error(e);
     error(e);
-    process.exit(0);
+    process.exit(1);
   }
 
   /**

@@ -18,6 +18,9 @@ type Product {
   visibility: Int
   groupId: ID
   url: String
+  supplierPrice: Float
+  supplierCurrency: String
+  supplierUpdatedAt: String
 }
 
 """

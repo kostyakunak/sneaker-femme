@@ -55,7 +55,8 @@ export async function compileSwc(
       // Delete the dist directory if it exists using rimraf
       await fsp.rm(distPath as string, { recursive: true, force: true });
       await execa('swc', cliOptions, {
-        cwd: path.resolve(srcPath as string, '..')
+        cwd: path.resolve(srcPath as string, '..'),
+        preferLocal: true
       });
     } catch (err) {
       error(`Error compiling ${srcPath}:`);

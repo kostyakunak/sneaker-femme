@@ -59,6 +59,50 @@ const SKUPriceWeight: React.FC<{
   );
 };
 
+const SupplierInfo: React.FC<{
+  product: {
+    price: {
+      regular: {
+        value: number;
+      };
+    };
+    supplierPrice?: number;
+    supplierCurrency?: string;
+    supplierUpdatedAt?: string;
+  };
+}> = ({ product }) => {
+  if (!product.supplierPrice) {
+    return null;
+  }
+
+  const sellingPrice = product.price.regular.value;
+  const supplierPrice = product.supplierPrice;
+  const margin = sellingPrice > 0 ? (((sellingPrice - supplierPrice) / sellingPrice) * 100).toFixed(2) : 0;
+  const marginColor = parseFloat(margin) < 0 ? 'text-critical' : 'text-success';
+
+  return (
+    <div className="mt-4 p-4 bg-gray-50 border rounded border-divider">
+      <div className="flex justify-between items-center">
+        <div>
+          <span className="font-semibold text-gray-700">Supplier Data:</span>
+          <span className="ml-2">
+            {product.supplierPrice} {product.supplierCurrency}
+          </span>
+        </div>
+        <div className="text-sm text-gray-400">
+          Last sync: {product.supplierUpdatedAt ? new Date(product.supplierUpdatedAt).toLocaleString() : 'Never'}
+        </div>
+      </div>
+      <div className="mt-2">
+        <span className="font-semibold text-gray-700">Estimated Margin:</span>
+        <span className={`ml-2 font-bold ${marginColor}`}>
+          {margin}%
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const CategoryQuery = `
   query Query ($id: Int!) {
     category(id: $id) {
@@ -132,14 +176,14 @@ const ProductCategory: React.FC<{
 
 const CategorySelect: React.FC<{
   product?:
-    | {
-        category?: {
-          categoryId: number;
-          name?: string;
-          path?: Array<{ name: string }>;
-        };
-      }
-    | undefined;
+  | {
+    category?: {
+      categoryId: number;
+      name?: string;
+      path?: Array<{ name: string }>;
+    };
+  }
+  | undefined;
 }> = ({ product }) => {
   const [category, setCategory] = React.useState<{
     categoryId: number;
@@ -192,7 +236,7 @@ const CategorySelect: React.FC<{
       >
         <CategorySelector
           onSelect={onSelect}
-          onUnSelect={() => {}}
+          onUnSelect={() => { }}
           selectedCategories={category ? [category] : []}
         />
       </Modal>
@@ -231,6 +275,9 @@ interface GeneralProps {
       name?: string;
       path?: Array<{ name: string }>;
     };
+    supplierPrice?: number;
+    supplierCurrency?: string;
+    supplierUpdatedAt?: string;
   };
   setting: {
     storeCurrency: string;
@@ -287,6 +334,13 @@ export default function General({
               },
               sortOrder: 20,
               id: 'SKUPriceWeight'
+            },
+            {
+              component: {
+                default: product ? <SupplierInfo product={product} /> : null
+              },
+              sortOrder: 21,
+              id: 'supplierInfo'
             },
             {
               component: {
@@ -358,6 +412,9 @@ export const query = `
         value
         unit
       }
+      supplierPrice
+      supplierCurrency
+      supplierUpdatedAt
       category {
         categoryId
         path {

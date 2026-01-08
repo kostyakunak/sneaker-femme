@@ -118,7 +118,7 @@ async function createCustomer(data: CustomerData, context: Record<string, unknow
  * @param {Object} data
  * @param {Object} context
  */
-export default async (data: CustomerData, context: Record<string, unknown> ): Promise<CustomerData> => {
+export default async (data: CustomerData, context: Record<string, unknown>): Promise<CustomerData> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');

@@ -17,7 +17,9 @@
       "preserveAllComments": false
     },
     "target": "es2022",
-    "experimental": { "keepImportAssertions": true },
+    "experimental": {
+      "keepImportAttributes": true
+    },
     "loose": false,
     "keepClassNames": false
   },

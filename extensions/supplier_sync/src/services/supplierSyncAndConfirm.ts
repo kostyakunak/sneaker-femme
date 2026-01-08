@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {
     execute,
     select,
@@ -7,6 +8,7 @@ import {
     commit,
     rollback
 } from '@evershop/postgres-query-builder';
+import path from 'path';
 import { pool } from '@evershop/evershop/lib/postgres';
 import { updatePaymentStatus, cancelOrder } from '@evershop/evershop/oms/services';
 import { info, error } from '@evershop/evershop/lib/log';
@@ -25,6 +27,7 @@ export async function supplierSyncAndConfirm(stripeClient = null) {
             info('Supplier sync already running, skipping');
             if (lockConn && typeof lockConn.release === 'function') {
                 lockConn.release();
+                lockConn = null;
             }
             return;
         }
@@ -54,7 +57,29 @@ export async function supplierSyncAndConfirm(stripeClient = null) {
         }
 
         // 1. Mock Supplier Update
-        info('Mocking Supplier Inventory Sync...');
+        // In a real scenario, this would call an external API.
+        // For now, we update supplier_price and inventory for all existing products.
+        info('Mocking Supplier Inventory & Price Sync...');
+        const products = await select().from('product').execute(lockConn, false);
+        for (const p of products) {
+            // Mock a supplier price (e.g., 80% of current retail price)
+            const mockSupplierPrice = p.price ? (parseFloat(p.price as string) * 0.8).toFixed(2) : 10.00;
+
+            await execute(lockConn,
+                `UPDATE "product" SET 
+                    supplier_price = ${mockSupplierPrice}, 
+                    supplier_currency = 'USD', 
+                    supplier_updated_at = NOW() 
+                 WHERE product_id = ${p.product_id}`
+            );
+
+            // Also ensure inventory exists/is updated
+            await execute(lockConn,
+                `INSERT INTO "product_inventory" (product_inventory_product_id, qty)
+                 VALUES (${p.product_id}, 10)
+                 ON CONFLICT (product_inventory_product_id) DO UPDATE SET qty = 10`
+            );
+        }
 
         // 2. Fetch Authorized Orders (FIFO)
         const orders = await select()

@@ -131,7 +131,7 @@ addProcessor(
         const logFile = getEnv('LOG_FILE', undefined);
         // Default transports
         const DEFAULT_CONFIG = {
-          level: isDebugging ? 'silly' : getEnv('LOGGER_LEVEL', 'warn'),
+          level: getEnv('LOGGER_LEVEL', isDebugging ? 'silly' : 'warn'),
           format,
           // By default, log to console
           transports:

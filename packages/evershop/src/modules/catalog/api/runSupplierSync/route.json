@@ -1,0 +1,6 @@
+{
+    "path": "/admin/run-supplier-sync",
+    "methods": [
+        "POST"
+    ]
+}

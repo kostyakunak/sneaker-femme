@@ -241,11 +241,56 @@ export const imageProcessor = async (
       try {
         await fs.access(sourcePath);
       } catch {
-        throw new Error(`Image ${sourcePath} not found`);
+        // Fuzzy search fallback: try to find the file by name in media/
+        const filename = path.basename(src);
+        debug(`[imageProcessor] Exact path not found, searching for: ${filename}`);
+
+        async function findFileRecursive(dir: string, targetName: string): Promise<string | null> {
+          try {
+            const entries = await fs.readdir(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                const found = await findFileRecursive(fullPath, targetName);
+                if (found) return found;
+              } else if (entry.name === targetName) {
+                return fullPath;
+              }
+            }
+          } catch {
+            // Ignore permission errors or missing directories
+          }
+          return null;
+        }
+
+        const mediaPath = path.join(CONSTANTS.ROOTPATH, 'media');
+        const foundPath = await findFileRecursive(mediaPath, filename);
+
+        if (foundPath) {
+          debug(`[imageProcessor] Found via fuzzy search: ${foundPath}`);
+          sourceImageBuffer = await fs.readFile(foundPath);
+        } else {
+          // Use placeholder image for missing files
+          debug(`[imageProcessor] File not found, using placeholder: ${filename}`);
+          const placeholderPath = path.join(CONSTANTS.ROOTPATH, 'public', 'placeholder.png');
+          try {
+            sourceImageBuffer = await fs.readFile(placeholderPath);
+          } catch {
+            // If placeholder also missing, throw error
+            throw new Error(`Image ${sourcePath} not found and placeholder unavailable`);
+          }
+        }
       }
 
-      // Read the image file
-      sourceImageBuffer = await fs.readFile(sourcePath);
+      // Read the image file (only if not already loaded by fuzzy search or placeholder)
+      if (!sourceImageBuffer) {
+        sourceImageBuffer = await fs.readFile(sourcePath);
+      }
+    }
+
+    // Ensure sourceImageBuffer is defined
+    if (!sourceImageBuffer) {
+      throw new Error('Failed to load image buffer');
     }
 
     // Use the specified format directly

@@ -1,6 +1,6 @@
 import {
-  commit, 
-  PoolClient, 
+  commit,
+  PoolClient,
   rollback,
   select,
   startTransaction,

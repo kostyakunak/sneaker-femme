@@ -41,7 +41,7 @@ function Actions({ orders = [], selectedIds = [] }) {
                 type="checkbox"
                 name="notify_customer"
                 label="Send notification to the customer"
-                onChange={() => {}}
+                onChange={() => { }}
               />
             </div>
           ),
@@ -113,9 +113,9 @@ export default function OrderGrid({
 
   const limit = currentFilters.find((filter) => filter.key === 'limit')
     ? parseInt(
-        currentFilters.find((filter) => filter.key === 'limit').value,
-        10
-      )
+      currentFilters.find((filter) => filter.key === 'limit').value,
+      10
+    )
     : 20;
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -133,27 +133,50 @@ export default function OrderGrid({
                   {
                     component: {
                       default: () => (
-                        <InputField
-                          name="keyword"
-                          placeholder="Search"
-                          defaultValue={
-                            currentFilters.find((f) => f.key === 'keyword')
-                              ?.value
-                          }
-                          onKeyPress={(e) => {
-                            // If the user press enter, we should submit the form
-                            if (e.key === 'Enter') {
-                              const url = new URL(document.location);
-                              const keyword = e.target?.value;
-                              if (keyword) {
-                                url.searchParams.set('keyword', keyword);
-                              } else {
-                                url.searchParams.delete('keyword');
-                              }
-                              window.location.href = url;
+                        <div className="flex gap-2">
+                          <InputField
+                            name="keyword"
+                            placeholder="Search"
+                            defaultValue={
+                              currentFilters.find((f) => f.key === 'keyword')
+                                ?.value
                             }
-                          }}
-                        />
+                            onKeyPress={(e) => {
+                              // If the user press enter, we should submit the form
+                              if (e.key === 'Enter') {
+                                const url = new URL(document.location);
+                                const keyword = e.target?.value;
+                                if (keyword) {
+                                  url.searchParams.set('keyword', keyword);
+                                } else {
+                                  url.searchParams.delete('keyword');
+                                }
+                                window.location.href = url;
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className={`btn ${currentFilters.find(
+                              (f) =>
+                                f.key === 'payment_status' &&
+                                f.value === 'authorized'
+                            )
+                              ? 'btn-primary'
+                              : 'btn-default'
+                              } whitespace-nowrap`}
+                            onClick={() => {
+                              const url = new URL(document.location);
+                              url.searchParams.set(
+                                'payment_status',
+                                'authorized'
+                              );
+                              window.location.href = url.href;
+                            }}
+                          >
+                            Awaiting Confirmation
+                          </button>
+                        </div>
                       )
                     },
                     sortOrder: 5
@@ -179,8 +202,8 @@ export default function OrderGrid({
                               (f) => f.key === 'payment_status'
                             )
                               ? currentFilters.find(
-                                  (f) => f.key === 'payment_status'
-                                ).value
+                                (f) => f.key === 'payment_status'
+                              ).value
                               : undefined
                           }
                           title="Payment status"
@@ -210,8 +233,8 @@ export default function OrderGrid({
                               (f) => f.key === 'shipment_status'
                             )
                               ? currentFilters.find(
-                                  (f) => f.key === 'shipment_status'
-                                ).value
+                                (f) => f.key === 'shipment_status'
+                              ).value
                               : undefined
                           }
                           title="Shipment status"
@@ -235,6 +258,18 @@ export default function OrderGrid({
               const url = new URL(document.location);
               url.search = '';
               window.location.href = url.href;
+            }
+          },
+          {
+            variant: 'primary',
+            name: 'Sync Supplier Now',
+            onAction: async () => {
+              try {
+                await axios.post('/admin/run-supplier-sync');
+                window.location.reload();
+              } catch (e) {
+                alert('Sync failed: ' + (e.response?.data?.message || e.message));
+              }
             }
           }
         ]}

@@ -53,6 +53,7 @@ export function addDefaultMiddlewareFuncs(app) {
   // Add public static middleware
   app.use(publicStatic);
   // Add theme public static middleware
+  // Add theme public static middleware
   app.use(themePublicStatic);
 
   // Express session
@@ -62,8 +63,8 @@ export function addDefaultMiddlewareFuncs(app) {
       process.env.NODE_ENV === 'test'
         ? undefined
         : new (sessionStorage(session))({
-            pool
-          }),
+          pool
+        }),
     secret: cookieSecret,
     cookie: {
       maxAge: getConfig('system.session.maxAge', 24 * 60 * 60 * 1000)
@@ -238,7 +239,7 @@ export function addDefaultMiddlewareFuncs(app) {
           publicPath: '/',
           stats: 'none'
         });
-        middlewareFunc.context.logger.info = () => {};
+        middlewareFunc.context.logger.info = () => { };
       } else {
         middlewareFunc = route.webpackMiddleware;
       }
@@ -265,7 +266,7 @@ export function addDefaultMiddlewareFuncs(app) {
             stats: 'none'
           }
         );
-        notFoundMiddlewareFunc.context.logger.info = () => {};
+        notFoundMiddlewareFunc.context.logger.info = () => { };
       } else {
         notFoundMiddlewareFunc = notFoundRoute.webpackMiddleware;
       }
@@ -286,7 +287,7 @@ export function addDefaultMiddlewareFuncs(app) {
             publicPath: '/',
             stats: 'none'
           });
-        adminNotFoundMiddlewareFunc.context.logger.info = () => {};
+        adminNotFoundMiddlewareFunc.context.logger.info = () => { };
       } else {
         adminNotFoundMiddlewareFunc = adminNotFoundRoute.webpackMiddleware;
       }

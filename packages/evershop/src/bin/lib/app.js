@@ -24,8 +24,10 @@ export const createApp = () => {
       // Load routes
       loadModuleRoutes(module.path);
     } catch (e) {
+      console.error('❌ Error loading module:', module.path);
+      console.error(e);
       error(e);
-      process.exit(0);
+      process.exit(1);
     }
   });
 
@@ -38,8 +40,10 @@ export const createApp = () => {
       // Load routes
       loadModuleRoutes(extension.path);
     } catch (e) {
+      console.error('❌ Error loading module:', module.path);
+      console.error(e);
       error(e);
-      process.exit(0);
+      process.exit(1);
     }
   });
 
