@@ -26,35 +26,6 @@ export default async function publicStatic(
       );
     }
   } catch (e) {
-    // Fallback: If image not found in public/assets, try to find by filename in media/
-    if (path.startsWith('/assets/')) {
-      const filename = path.split('/').pop();
-      // Search recursively in media folder
-      async function findFile(dir, name) {
-        const files = await fs.readdir(dir, { withFileTypes: true });
-        for (const file of files) {
-          if (file.isDirectory()) {
-            const found = await findFile(join(dir, file.name), name);
-            if (found) return found;
-          } else if (file.name === name) {
-            return join(dir, file.name);
-          }
-        }
-        return null;
-      }
-
-      try {
-        const mediaPath = join(CONSTANTS.ROOTPATH, 'media');
-        const foundPath = await findFile(mediaPath, filename);
-
-        if (foundPath) {
-          return response.sendFile(foundPath);
-        }
-      } catch (err) {
-        // media folder might not exist or other error, just ignore
-      }
-    }
-
     // Fallback for fonts (e.g., slick.woff from node_modules)
     if (path.includes('/fonts/') && /\.(woff|woff2|ttf|eot)$/i.test(path)) {
       const filename = path.split('/').pop();

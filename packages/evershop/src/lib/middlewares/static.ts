@@ -5,6 +5,8 @@ import staticMiddleware from 'serve-static';
 import { EvershopRequest } from '../..//types/request.js';
 import { EvershopResponse } from '../../types/response.js';
 import { CONSTANTS } from '../helpers.js';
+import { getConfig } from '../util/getConfig.js';
+import { getEnv } from '../util/getEnv.js';
 
 // Define allowed file extensions (whitelist)
 const ALLOWED_EXTENSIONS = [
@@ -128,8 +130,9 @@ export default async (
   }
 
   // Check media path
+  const isS3DisabledLocal = getEnv('S3_DISABLE_LOCAL_MEDIA') === 'true';
   const mediaPath = join(CONSTANTS.MEDIAPATH, path);
-  if ((await pathExists(mediaPath)) && (await isValidFile(mediaPath))) {
+  if (!isS3DisabledLocal && (await pathExists(mediaPath)) && (await isValidFile(mediaPath))) {
     return staticMiddleware(CONSTANTS.MEDIAPATH, staticMiddlewareOptions)(
       request,
       response,
@@ -144,6 +147,14 @@ export default async (
       join(CONSTANTS.ROOTPATH, 'public'),
       staticMiddlewareOptions
     )(request, response, next);
+  }
+
+  // If file storage is S3 and file not found locally, redirect to S3
+  if (getConfig('system.file_storage') === 's3') {
+    const s3BaseUrl = getEnv('S3_PUBLIC_BASE_URL');
+    if (s3BaseUrl) {
+      return response.redirect(302, `${s3BaseUrl}/${path}`);
+    }
   }
 
   // If none of the above conditions are met

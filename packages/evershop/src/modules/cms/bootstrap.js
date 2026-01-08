@@ -123,7 +123,7 @@ export default () => {
           properties: {
             file_storage: {
               type: 'string',
-              enum: ['local']
+              enum: ['local', 's3']
             }
           }
         }

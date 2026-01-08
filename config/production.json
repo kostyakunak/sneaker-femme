@@ -16,6 +16,8 @@
   },
   "media": {
     "path": "/media"
+  },
+  "system": {
+    "file_storage": "s3"
   }
 }
-

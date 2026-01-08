@@ -1,46 +1,40 @@
-import path from "path";
-import {
-  S3Client,
-  PutObjectCommand,
-  PutObjectCommandOutput,
-} from "@aws-sdk/client-s3";
-import { getEnv } from "@evershop/evershop/lib/util/getEnv";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { UploadedFile } from "@evershop/evershop/cms/services";
-
-const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
-const bucketName = getEnv("AWS_BUCKET_NAME");
+import { s3Client, bucketName } from "./s3Client.js";
 
 export const awsFileUploader = {
   upload: async (files: Express.Multer.File[], requestedPath: string) => {
     const uploadedFiles: UploadedFile[] = [];
-    const uploadPromises: Promise<PutObjectCommandOutput>[] = [];
+    const uploadPromises: Promise<any>[] = [];
 
     for (const file of files) {
       const fileName = requestedPath
-        ? `${requestedPath}/${file.filename}`
+        ? `${requestedPath}/${file.filename}`.replace(/\/+/g, '/')
         : file.filename;
-      const fileContent = file.buffer;
+
       const params = {
         Bucket: bucketName,
         Key: fileName,
-        Body: fileContent,
+        Body: file.buffer,
+        ContentType: file.mimetype,
       };
 
       const uploadCommand = new PutObjectCommand(params);
-      const uploadPromise = s3Client.send(uploadCommand);
-      uploadPromises.push(uploadPromise);
+      uploadPromises.push(s3Client.send(uploadCommand));
     }
 
-    const uploadResults = await Promise.all(uploadPromises);
-    uploadResults.forEach((result, index) => {
+    await Promise.all(uploadPromises);
+
+    files.forEach((file) => {
+      const key = requestedPath
+        ? `${requestedPath}/${file.filename}`.replace(/\/+/g, '/')
+        : file.filename;
+
       uploadedFiles.push({
-        name: files[index].filename,
-        mimetype: files[index].mimetype,
-        size: files[index].size,
-        url: `https://${bucketName}.s3.amazonaws.com/${path.join(
-          requestedPath,
-          files[index].filename
-        )}`,
+        name: file.filename,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: `/assets/${key}`,
       });
     });
 

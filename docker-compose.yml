@@ -10,10 +10,18 @@ services:
       DB_PASSWORD: postgres
       DB_USER: postgres
       DB_NAME: postgres
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_S3_FORCE_PATH_STYLE: "true"
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_BUCKET_NAME: evershop-media
+      S3_PUBLIC_BASE_URL: http://localhost:9000/evershop-media
+      NODE_ENV: development
     networks:
       - shop-network
     depends_on:
       - database
+      - minio
     ports:
       - 3000:3000
   
@@ -32,6 +40,34 @@ services:
     networks:
       - shop-network
 
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    networks:
+      - shop-network
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set localminio http://minio:9000 minioadmin minioadmin) do echo '...waiting for minio...' && sleep 1; done;
+      /usr/bin/mc mb localminio/evershop-media || true;
+      /usr/bin/mc anonymous set download localminio/evershop-media;
+      exit 0;
+      "
+    networks:
+      - shop-network
+
 networks:
   shop-network:
     name: ShopNetwork
@@ -39,3 +75,4 @@ networks:
 
 volumes:
   postgres-data:
+  minio-data:
