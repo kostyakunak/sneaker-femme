@@ -4,7 +4,7 @@ import { DateTimeLocalField } from '@components/common/form/DateTimeLocalField.j
 import { InputField } from '@components/common/form/InputField.js';
 import { SelectField } from '@components/common/form/SelectField.js';
 import { TextareaField } from '@components/common/form/TextareaField.js';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
+import { _ } from '../../../../../lib/locale/translate/_.js';
 import React, { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -162,8 +162,8 @@ export default function Attributes({
               const validation =
                 attribute.is_required === 1
                   ? {
-                      required: `${attribute.attribute_name} is required`
-                    }
+                    required: `${attribute.attribute_name} is required`
+                  }
                   : {};
               let Field: React.ReactNode = null;
               switch (attribute.type) {

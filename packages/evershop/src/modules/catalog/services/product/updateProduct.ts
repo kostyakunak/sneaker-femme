@@ -141,7 +141,7 @@ async function saveProductAttributes(productId: number, attributes: ProductAttri
           .where('attribute_option_id', '=', parseInt(attribute.value, 10))
           .load(connection);
         if (option === false) {
-           
+
           continue;
         }
         // Delete old option if any
@@ -247,30 +247,30 @@ async function updateProductImages(images, productId, connection) {
       await Promise.all(
         images.map((f, index) =>
           (async () => {
-        // Remove baseUrl from the image path if it exists
-        const imagePath = f.startsWith(baseUrl) ? f.substring(baseUrl.length) : f;
-        
-        const image = await select()
-          .from('product_image')
-          .where('product_image_product_id', '=', productId)
-          .and('origin_image', '=', imagePath)
-          .load(connection);
+            // Remove baseUrl from the image path if it exists
+            const imagePath = f.startsWith(baseUrl) ? f.substring(baseUrl.length) : f;
 
-        if (!image) {
-          await insert('product_image')
-            .given({
-          product_image_product_id: productId,
-          origin_image: imagePath,
-          is_main: index === 0
-            })
-            .execute(connection);
-        } else {
-          await update('product_image')
-            .given({ is_main: index === 0 })
-            .where('product_image_product_id', '=', productId)
-            .and('origin_image', '=', imagePath)
-            .execute(connection);
-        }
+            const image = await select()
+              .from('product_image')
+              .where('product_image_product_id', '=', productId)
+              .and('origin_image', '=', imagePath)
+              .load(connection);
+
+            if (!image) {
+              await insert('product_image')
+                .given({
+                  product_image_product_id: productId,
+                  origin_image: imagePath,
+                  is_main: index === 0
+                })
+                .execute(connection);
+            } else {
+              await update('product_image')
+                .given({ is_main: index === 0 })
+                .where('product_image_product_id', '=', productId)
+                .and('origin_image', '=', imagePath)
+                .execute(connection);
+            }
           })()
         )
       );
@@ -363,6 +363,13 @@ async function updateProduct(uuid: string, data: ProductData, context: Record<st
     }
 
     const productData = await getValue('productDataBeforeUpdate', data);
+
+    // If product is managed by supplier, prevent inventory updates
+    if (currentProduct.supplier_sku) {
+      delete productData.qty;
+      delete productData.manage_stock;
+      delete productData.stock_availability;
+    }
 
     // Validate product data
     validateProductDataBeforeUpdate(productData);

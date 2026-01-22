@@ -7,7 +7,7 @@ import { NumberField } from '@components/common/form/NumberField.js';
 import { SelectField } from '@components/common/form/SelectField.js';
 import { Modal } from '@components/common/modal/Modal.js';
 import { useModal } from '@components/common/modal/useModal.js';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
+import { _ } from '../../../../../lib/locale/translate/_.js';
 import React from 'react';
 import { useQuery } from 'urql';
 import './General.scss';

@@ -3,18 +3,23 @@ import { ArchiveBoxIcon } from '@heroicons/react/24/solid';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export default function NewProductQuickLink({ productNew }) {
-  return (
-    <NavigationItem
-      Icon={ArchiveBoxIcon}
-      title="New Product"
-      url={productNew}
-    />
-  );
+export default function NewProductQuickLink({ productNew, supplierImportUrl }) {
+  // RESELLER MODEL: Hide "New Product" button, force creation via Import
+  // Uncomment the return below to restore manual product creation
+  return null;
+
+  // return (
+  //   <NavigationItem
+  //     Icon={ArchiveBoxIcon}
+  //     title="New Product"
+  //     url={productNew}
+  //   />
+  // );
 }
 
 NewProductQuickLink.propTypes = {
-  productNew: PropTypes.string.isRequired
+  productNew: PropTypes.string.isRequired,
+  supplierImportUrl: PropTypes.string
 };
 
 export const layout = {
@@ -25,5 +30,6 @@ export const layout = {
 export const query = `
   query Query {
     productNew: url(routeId:"productNew")
+    supplierImportUrl: url(routeId:"supplierImport")
   }
 `;

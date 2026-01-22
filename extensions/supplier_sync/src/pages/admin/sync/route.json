@@ -1,0 +1,8 @@
+{
+    "id": "supplierSyncStatus",
+    "path": "/admin/supplier-sync",
+    "methods": [
+        "GET"
+    ],
+    "access": "private"
+}

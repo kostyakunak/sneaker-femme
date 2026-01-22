@@ -1,5 +1,5 @@
-import { NavigationItemGroup } from "@components/admin/cms/NavigationItemGroup";
-import ChatIcon from "@heroicons/react/solid/esm/ChatIcon";
+import { NavigationItemGroup } from "@components/admin/NavigationItemGroup";
+import ChatIcon from "@heroicons/react/24/solid/esm/ChatIcon";
 import PropTypes from "prop-types";
 import React from "react";
 

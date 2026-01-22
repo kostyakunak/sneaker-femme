@@ -19,7 +19,7 @@ interface PoolClient extends PgPoolClient {
 class Select {
   _fields: string[] = [];
 
-  constructor() {}
+  constructor() { }
 
   select(field: string | SQLValue, alias?: string): Select {
     // Resolve field name
@@ -375,9 +375,8 @@ class Join {
     }
     let stm = '';
     this._joins.forEach((join) => {
-      stm += `${join.type} "${join.table}" AS "${
-        join.alias
-      }" ${join.on.render()} `;
+      stm += `${join.type} "${join.table}" AS "${join.alias
+        }" ${join.on.render()} `;
       Object.assign(this._query._binding, join.on.getBinding());
     });
     return stm;
@@ -477,9 +476,8 @@ class Limit {
     if (this._offset === null && this._limit === null) {
       return '';
     }
-    return `LIMIT ${this._limit === null ? null : this._limit} OFFSET ${
-      +this._offset! || 0
-    } `;
+    return `LIMIT ${this._limit === null ? null : this._limit} OFFSET ${+this._offset! || 0
+      } `;
   }
 
   clone(): Limit {
@@ -490,7 +488,7 @@ class Limit {
 class GroupBy {
   _fields: string[] = [];
 
-  constructor() {}
+  constructor() { }
 
   add(field: string): GroupBy {
     this._fields.push(fieldResolve(field));
@@ -515,7 +513,7 @@ class OrderBy {
   _field: string | null = null;
   _direction: string = 'DESC';
 
-  constructor() {}
+  constructor() { }
 
   add(field: string, direction?: string): OrderBy {
     this._field = fieldResolve(field);
@@ -1145,9 +1143,10 @@ function release(connection: PoolClient | Pool): void {
 
 async function execute(
   connection: PoolClient | Pool,
-  query: string
+  query: string,
+  params: any[] = []
 ): Promise<QueryResult> {
-  return await connection.query(query);
+  return await connection.query(query, params);
 }
 
 function sql(value: any): SQLValue {

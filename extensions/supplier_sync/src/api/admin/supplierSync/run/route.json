@@ -1,0 +1,7 @@
+{
+    "path": "/admin/supplier-sync/run",
+    "methods": [
+        "POST"
+    ],
+    "isAdmin": true
+}

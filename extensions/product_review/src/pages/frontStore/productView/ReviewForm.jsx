@@ -1,7 +1,8 @@
-import { Field } from "@components/common/form/Field";
+import { InputField } from "@components/common/form/InputField";
+import { TextareaField } from "@components/common/form/TextareaField";
 import { Form } from "@components/common/form/Form";
 import { _ } from "@evershop/evershop/lib/locale/translate/_";
-import StartIcon from "@heroicons/react/solid/esm/StarIcon";
+import StartIcon from "@heroicons/react/24/solid/esm/StarIcon";
 import PropTypes from "prop-types";
 import React from "react";
 
@@ -38,8 +39,7 @@ export default function ReviewForm({ action, product }) {
             action={action}
             method="POST"
             onSuccess={onSuccess}
-            isJSON
-            btnText={_("Submit review")}>
+            submitBtnText={_("Submit review")}>
             <label htmlFor="rating">{_("Your Rating")}</label>
             <div className="rating__stars">
               {[...Array(5)].map((e, i) => (
@@ -59,25 +59,24 @@ export default function ReviewForm({ action, product }) {
                 </a>
               ))}
             </div>
-            <Field
+            <InputField
               type="hidden"
               name="rating"
               value={rating}
-              validationRules={["required"]}
+              validation={{ required: "Rating is required" }}
             />
-            <Field
+            <InputField
               name="customer_name"
               label={_("Your Name")}
               type="text"
-              validationRules={["notEmpty"]}
+              validation={{ required: "Name is required" }}
             />
-            <Field
+            <TextareaField
               name="comment"
               label={_("Your Comment")}
-              type="textarea"
-              validationRules={["notEmpty"]}
+              validation={{ required: "Comment is required" }}
             />
-            <Field type="hidden" name="product_id" value={product.productId} />
+            <InputField type="hidden" name="product_id" value={product.productId} />
           </Form>
         </>
       )}

@@ -162,9 +162,9 @@ export default function ProductGrid({
 
   const limit = currentFilters.find((filter) => filter.key === 'limit')
     ? parseInt(
-        currentFilters.find((filter) => filter.key === 'limit').value,
-        10
-      )
+      currentFilters.find((filter) => filter.key === 'limit').value,
+      10
+    )
     : 20;
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -233,7 +233,7 @@ export default function ProductGrid({
                           selectedOption={
                             currentFilters.find((f) => f.key === 'status')
                               ? currentFilters.find((f) => f.key === 'status')
-                                  .value === '1'
+                                .value === '1'
                                 ? 'Enabled'
                                 : 'Disabled'
                               : undefined
@@ -271,7 +271,7 @@ export default function ProductGrid({
                           selectedOption={
                             currentFilters.find((f) => f.key === 'type')
                               ? currentFilters.find((f) => f.key === 'type')
-                                  .value
+                                .value
                               : undefined
                           }
                           title="Product type"
@@ -367,13 +367,25 @@ export default function ProductGrid({
                   component: {
                     default: () => (
                       <SortableHeader
-                        title="Stock"
+                        title="Stock (Supplier)"
                         name="qty"
                         currentFilters={currentFilters}
                       />
                     )
                   },
                   sortOrder: 25
+                },
+                {
+                  component: {
+                    default: () => (
+                      <SortableHeader
+                        title="Supplier Price"
+                        name="supplier_price"
+                        currentFilters={currentFilters}
+                      />
+                    )
+                  },
+                  sortOrder: 27
                 },
                 {
                   component: {
@@ -457,9 +469,24 @@ export default function ProductGrid({
                   },
                   {
                     component: {
-                      default: () => <td>{p.inventory?.qty}</td>
+                      default: () => (
+                        <td>
+                          <div>{p.inventory?.qty}</div>
+                          {p.supplierUpdatedAt && (
+                            <div className="text-xs text-textSubdued mt-1">
+                              Synced: {new Date(p.supplierUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
+                        </td>
+                      )
                     },
                     sortOrder: 25
+                  },
+                  {
+                    component: {
+                      default: () => <td>{p.supplierPrice ? `${p.supplierPrice}` : '-'}</td>
+                    },
+                    sortOrder: 27
                   },
                   {
                     component: {
@@ -549,6 +576,8 @@ export const query = `
             text
           }
         }
+        supplierPrice
+        supplierUpdatedAt
         editUrl
         updateApi
         deleteApi

@@ -150,7 +150,8 @@ export default async (
   }
 
   // If file storage is S3 and file not found locally, redirect to S3
-  if (getConfig('system.file_storage') === 's3') {
+  // Redirect to S3 ONLY for storefront assets (/assets/*), never for admin bundles
+  if (request.isAdmin !== true && getConfig('system.file_storage') === 's3') {
     const s3BaseUrl = getEnv('S3_PUBLIC_BASE_URL');
     if (s3BaseUrl) {
       return response.redirect(302, `${s3BaseUrl}/${path}`);

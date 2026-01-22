@@ -1,0 +1,7 @@
+{
+    "id": "dashboard",
+    "path": "/admin",
+    "methods": [
+        "GET"
+    ]
+}

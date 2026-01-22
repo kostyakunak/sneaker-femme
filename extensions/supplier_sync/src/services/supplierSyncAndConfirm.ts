@@ -1,246 +1,332 @@
-import 'dotenv/config';
-import {
-    execute,
-    select,
-    getConnection,
-    insert,
-    startTransaction,
-    commit,
-    rollback
-} from '@evershop/postgres-query-builder';
-import path from 'path';
-import { pool } from '@evershop/evershop/lib/postgres';
-import { updatePaymentStatus, cancelOrder } from '@evershop/evershop/oms/services';
-import { info, error } from '@evershop/evershop/lib/log';
-// const info = console.log;
-// const error = console.error;
-import { getConfig } from '@evershop/evershop/lib/util/getConfig';
-import { getSetting } from '@evershop/evershop/setting/services';
 
-export async function supplierSyncAndConfirm(stripeClient = null) {
-    let lockConn;
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { readFileSync, existsSync } from 'fs';
+import {
+    select,
+    update,
+    execute
+} from '@evershop/postgres-query-builder';
+
+let info = (msg: any) => console.log(`[INFO] ${msg}`);
+let error = (msg: any) => console.error(`[ERROR] ${msg}`);
+
+import { tgSend } from './telegram.js';
+
+const ADVISORY_LOCK_ID = 1768678606; // Unique ID for this job
+
+/**
+ * Job to sync products from a supplier feed (JSON) and confirm authorized orders.
+ * Path: extensions/supplier_sync/src/services/supplierSyncAndConfirm.ts
+ */
+export default async function supplierSyncAndConfirm(stripeClient: any, initialFeed: any = null, externalConn: any = null) {
+    let connection = externalConn;
+    let releasedLocally = false;
+    let locked = false;
+
     try {
-        lockConn = await getConnection(pool);
-        // Advisory lock: 888888
-        const lockRes = await execute(lockConn, 'SELECT pg_try_advisory_lock(888888) AS locked');
-        if (!lockRes.rows[0].locked) {
-            info('Supplier sync already running, skipping');
-            if (lockConn && typeof lockConn.release === 'function') {
-                lockConn.release();
-                lockConn = null;
-            }
-            return;
+        // Attempt to load standard Evershop logger
+        try {
+            // @ts-ignore
+            const logger = await import('@evershop/evershop/src/lib/log/logger');
+            if (logger.info) info = logger.info;
+            if (logger.error) error = logger.error;
+        } catch (e) {
+            // Fallback to console loggers (already set)
         }
 
         info('Starting Supplier Sync & Confirmation Job...');
 
-        // Initialize Stripe
-        let stripe = stripeClient;
-        if (!stripe) {
-            const stripeConfig = getConfig('system.stripe', {});
-            let stripeSecretKey;
-            if (stripeConfig.secretKey) {
-                stripeSecretKey = stripeConfig.secretKey;
-            } else {
-                stripeSecretKey = await getSetting('stripeSecretKey', '');
-            }
-
-            if (!stripeSecretKey) {
-                throw new Error('Stripe Secret Key not found in config or settings');
-            }
-
-            // Dynamic import to avoid load issues during testing or if package is missing
-            const { default: stripePackage } = await import('stripe');
-            stripe = new stripePackage(stripeSecretKey, {
-                apiVersion: '2020-08-27'
-            });
+        if (!connection) {
+            // @ts-ignore
+            const { getPool } = await import('@evershop/evershop/src/lib/postgres/connection');
+            connection = await getPool().connect();
+            releasedLocally = true;
+            // CRITICAL: Prevent query-builder from releasing connection after each execute()
+            // @ts-ignore
+            connection.INTRANSACTION = true;
         }
 
-        // 1. Mock Supplier Update
-        // In a real scenario, this would call an external API.
-        // For now, we update supplier_price and inventory for all existing products.
-        info('Mocking Supplier Inventory & Price Sync...');
-        const products = await select().from('product').execute(lockConn, false);
-        for (const p of products) {
-            // Mock a supplier price (e.g., 80% of current retail price)
-            const mockSupplierPrice = p.price ? (parseFloat(p.price as string) * 0.8).toFixed(2) : 10.00;
+        // 0. Acquire Advisory Lock to prevent parallel execution
+        await execute(connection, `SELECT pg_advisory_lock(${ADVISORY_LOCK_ID})`);
+        locked = true;
 
-            await execute(lockConn,
-                `UPDATE "product" SET 
-                    supplier_price = ${mockSupplierPrice}, 
-                    supplier_currency = 'USD', 
-                    supplier_updated_at = NOW() 
-                 WHERE product_id = ${p.product_id}`
-            );
+        // 1. Sync Inventory from Feed
+        const mockSupplier = process.env.MOCK_SUPPLIER === '1';
+        await syncSupplierInventory(connection, initialFeed, mockSupplier);
 
-            // Also ensure inventory exists/is updated
-            await execute(lockConn,
-                `INSERT INTO "product_inventory" (product_inventory_product_id, qty)
-                 VALUES (${p.product_id}, 10)
-                 ON CONFLICT (product_inventory_product_id) DO UPDATE SET qty = 10`
-            );
-        }
-
-        // 2. Fetch Authorized Orders (FIFO)
-        const orders = await select()
-            .from('order')
-            .orderBy('created_at', 'ASC')
-            .where('payment_status', '=', 'authorized')
-            .execute(lockConn, false);
-
-        info(`Found ${orders.length} authorized orders to process.`);
-
-        for (const order of orders) {
-            await processOrder(order, stripe);
-        }
+        // 2. Process Authorized Orders
+        await processAuthorizedOrders(connection, stripeClient);
 
     } catch (e) {
         error(e);
     } finally {
-        if (lockConn) {
-            try {
-                await execute(lockConn, 'SELECT pg_advisory_unlock(888888)');
-            } catch (unlockError) {
-                error(unlockError);
+        if (connection) {
+            if (locked) {
+                await execute(connection, `SELECT pg_advisory_unlock(${ADVISORY_LOCK_ID})`);
             }
-            if (typeof lockConn.release === 'function') {
-                lockConn.release();
+            if (releasedLocally) {
+                // @ts-ignore
+                connection.INTRANSACTION = false;
+                connection.release();
             }
         }
     }
 }
 
-async function processOrder(order, stripe) {
-    let connection;
-    try {
-        connection = await getConnection(pool);
+async function syncSupplierInventory(connection: any, initialFeed: any, mockSupplier: boolean = false) {
+    let successCount = 0;
+    let feed = initialFeed;
 
-        // 1. READ Data (No transaction or short read-locked)
-        // Fetch Items
-        const items = await select()
-            .from('order_item')
-            .where('order_item_order_id', '=', order.order_id)
-            .execute(connection, false);
+    if (!feed) {
+        try {
+            const currentDir = path.dirname(fileURLToPath(import.meta.url));
+            const fixturePath = path.resolve(currentDir, '../../../../tests/fixtures/supplierFeed.fixture.json');
 
-        // Fetch Transaction ID (Strict: latest authorize action)
-        const transQuery = select().from('payment_transaction');
-        transQuery.where('payment_transaction_order_id', '=', order.order_id)
-            .and('transaction_type', '=', 'online')
-            .and('payment_action', '=', 'authorize');
-
-        transQuery.orderBy('created_at', 'DESC').limit(0, 1);
-        const transactions = await transQuery.execute(connection, false);
-
-        const paymentIntentId = transactions[0] ? transactions[0].transaction_id : null;
-        if (!paymentIntentId) {
-            throw new Error(`No payment transaction found for authorized order #${order.order_number}`);
-        }
-
-        // Check Stock
-        let canFulfill = true;
-        for (const item of items) {
-            const inventory = await select()
-                .from('product_inventory')
-                .where('product_inventory_product_id', '=', item.product_id)
-                .execute(connection, false);
-
-            const qtyAvailable = inventory[0] ? inventory[0].qty : 0;
-            if (qtyAvailable < item.qty) {
-                canFulfill = false;
-                break;
-            }
-        }
-
-        // RELEASE connection before networking
-        connection.release();
-        connection = null;
-
-        // 2. NETWORKING (Stripe)
-        let success = false;
-        if (canFulfill) {
-            info(`Capturing payment for Order #${order.order_number} (PI: ${paymentIntentId})`);
-            const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId, {}, {
-                idempotencyKey: `capture-${order.uuid}`
-            });
-            if (paymentIntent.status === 'succeeded') {
-                success = true;
+            if (existsSync(fixturePath)) {
+                info(`Loading feed from ${fixturePath}`);
+                feed = JSON.parse(readFileSync(fixturePath, 'utf8'));
             } else {
-                throw new Error(`Stripe Capture failed. Status: ${paymentIntent.status}`);
+                const altPath = path.resolve(process.cwd(), 'tests/fixtures/supplierFeed.fixture.json');
+                if (existsSync(altPath)) {
+                    info(`Loading feed from ${altPath} (fallback)`);
+                    feed = JSON.parse(readFileSync(altPath, 'utf8'));
+                }
             }
+        } catch (e) {
+            info(`Error loading feed: ${(e as Error).message}`);
+        }
+    }
+
+    // Use raw query to avoid builder issues with IS NOT NULL
+    const res = await execute(connection, 'SELECT * FROM product WHERE supplier_sku IS NOT NULL');
+    const products = res.rows || [];
+
+    for (const p of products) {
+        let supplierPrice;
+        let qty;
+
+        // @ts-ignore
+        const feedItem = feed ? feed.find((f: any) => f.sku === p.supplier_sku) : null;
+        if (feedItem) {
+            supplierPrice = feedItem.price;
+            qty = feedItem.qty;
+        } else if (mockSupplier) {
+            supplierPrice = p.price ? (parseFloat(p.price as string) * 0.8).toFixed(2) : 10.00;
+            qty = Math.floor(Math.random() * 50);
         } else {
-            info(`Voiding/Canceling Order #${order.order_number} - Out of Stock (PI: ${paymentIntentId})`);
-            await stripe.paymentIntents.cancel(paymentIntentId, {}, {
-                idempotencyKey: `cancel-${order.uuid}`
-            });
-            success = true;
+            continue;
         }
 
-        // 3. WRITE Data (Short transaction)
-        if (success) {
-            connection = await getConnection(pool);
-            await startTransaction(connection);
+        // Update Inventory
+        await update('product_inventory')
+            .given({
+                qty: qty,
+                stock_availability: qty > 0
+            })
+            .where('product_inventory_product_id', '=', p.product_id)
+            .execute(connection);
 
-            if (canFulfill) {
-                // Update to PAID and PROCESSING (standard flow)
-                await execute(
-                    connection,
-                    `UPDATE "order" SET 
-                        payment_status = 'paid', 
-                        status = 'processing', 
-                        updated_at = NOW() 
-                     WHERE order_id = ${order.order_id}`
-                );
+        // Update Product Supplier Info
+        await update('product')
+            .given({
+                supplier_price: supplierPrice,
+                supplier_updated_at: new Date(),
+                supplier_source: mockSupplier ? 'mock' : 'fixture'
+            })
+            .where('product_id', '=', p.product_id)
+            .execute(connection);
 
-                await insert('order_activity').given({
-                    order_activity_order_id: order.order_id,
-                    comment: `Automated: Stock Confirmed & Payment Captured (Stripe PI: ${paymentIntentId}). Status: processing.`,
-                    customer_notified: 1
-                }).execute(connection, false);
+        successCount++;
+    }
+
+    return successCount;
+}
+
+async function processAuthorizedOrders(connection: any, stripeClient: any) {
+    const ordersRes = await select().from('order')
+        .where('payment_status', '=', 'authorized')
+        .execute(connection);
+
+    const orders = ordersRes || [];
+
+    // Skip orders already in processing_lock states (idempotency protection)
+    const processingOrders = orders.filter(o =>
+        o.payment_status !== 'capturing' && o.payment_status !== 'voiding'
+    );
+
+    if (processingOrders.length > 0) {
+        if (!stripeClient) {
+            info(`Skipping ${processingOrders.length} authorized orders - Stripe not configured`);
+            return;
+        }
+        info(`Processing ${processingOrders.length} authorized orders...`);
+    }
+
+    const simMode = process.env.SUPPLIER_SIM_MODE;
+    const simSuccessRate = Number(process.env.SUPPLIER_SIM_SUCCESS_RATE || '0.7');
+
+    for (const order of processingOrders) {
+        try {
+            // Simulation Logic
+            let forceFail = false;
+            if (simMode === 'random') {
+                forceFail = Math.random() > simSuccessRate;
+                if (forceFail) {
+                    info(`Simulating FAIL for order ${order.order_number} (random mode)`);
+                }
+            }
+            // Check all items in stock
+            const items = await select().from('order_item')
+                .where('order_item_order_id', '=', order.order_id)
+                .execute(connection);
+
+            let allInStock = true;
+            for (const item of items) {
+                const invRes = await select().from('product_inventory')
+                    .where('product_inventory_product_id', '=', item.product_id)
+                    .execute(connection);
+                const inv = invRes[0];
+
+                if (!inv || Number(inv.qty) < Number(item.qty)) {
+                    info(`Item ${item.product_sku || 'unknown'} out of stock for order ${order.order_number}`);
+                    allInStock = false;
+                    break;
+                }
+            }
+
+            // Apply simulation fail if needed
+            if (forceFail) {
+                allInStock = false;
+            }
+
+            // Find Transaction ID (Avoid non-existent 'status' column)
+            const txQuery = select().from('payment_transaction');
+            txQuery.where('payment_transaction_order_id', '=', order.order_id);
+            txQuery.andWhere('payment_action', '=', 'authorize');
+            const txRes = await txQuery.execute(connection);
+            const tx = txRes[0];
+
+            if (allInStock && tx) {
+                info(`Capturing order ${order.order_number}`);
+
+                // IDEMPOTENCY: Set processing_lock BEFORE Stripe call
+                await update('order')
+                    .given({ payment_status: 'capturing' })
+                    .where('order_id', '=', order.order_id)
+                    .execute(connection);
+
+                try {
+                    // @ts-ignore
+                    await stripeClient.paymentIntents.capture(tx.transaction_id, {}, { idempotencyKey: `capture-${order.uuid}` });
+
+                    await update('order')
+                        .given({ status: 'processing', payment_status: 'paid' })
+                        .where('order_id', '=', order.order_id)
+                        .execute(connection);
+
+                    // AUDIT TRAIL: Log successful capture
+                    await execute(connection,
+                        `INSERT INTO order_activity (order_activity_order_id, comment, customer_notified, created_at) 
+                         VALUES ($1, $2, false, NOW())`,
+                        [order.order_id, 'Order captured via supplier sync']
+                    );
+
+                    // TELEGRAM NOTIFICATION
+                    await tgSend(
+                        `✅ <b>ORDER CONFIRMED</b>\n` +
+                        `Order #${order.order_number}\n` +
+                        `Total: ${order.grand_total} ${order.currency}\n` +
+                        `Items:\n${items.map(i => `• ${i.product_sku} x${i.qty}`).join("\n")}\n\n` +
+                        `Supplier action: DEDUCT STOCK`
+                    );
+                } catch (stripeError) {
+                    // AUDIT TRAIL: Log Stripe failure
+                    await execute(connection,
+                        `INSERT INTO order_activity (order_activity_order_id, comment, customer_notified, created_at) 
+                         VALUES ($1, $2, false, NOW())`,
+                        [order.order_id, `Payment capture failed: ${(stripeError as Error).message}`]
+                    );
+
+                    // TELEGRAM NOTIFICATION (Error)
+                    await tgSend(
+                        `⚠️ <b>ORDER RETRY</b>\n` +
+                        `Order #${order.order_number}\n` +
+                        `Stripe/Error: ${String((stripeError as Error).message || stripeError)}`
+                    );
+                    // Revert to authorized state for retry on next job run
+                    await update('order')
+                        .given({ payment_status: 'authorized' })
+                        .where('order_id', '=', order.order_id)
+                        .execute(connection);
+                    // Don't throw - allow job to continue processing other orders
+                }
+            } else if (!allInStock && tx) {
+                // Find out-of-stock item for audit trail
+                let outOfStockSku = 'unknown';
+                for (const item of items) {
+                    const invRes = await select().from('product_inventory')
+                        .where('product_inventory_product_id', '=', item.product_id)
+                        .execute(connection);
+                    const inv = invRes[0];
+                    if (!inv || Number(inv.qty) < Number(item.qty)) {
+                        outOfStockSku = item.product_sku || 'unknown';
+                        break;
+                    }
+                }
+
+                info(`Canceling order ${order.order_number} due to stock issues`);
+
+                // IDEMPOTENCY: Set processing_lock BEFORE Stripe call
+                await update('order')
+                    .given({ payment_status: 'voiding' })
+                    .where('order_id', '=', order.order_id)
+                    .execute(connection);
+
+                try {
+                    // @ts-ignore
+                    await stripeClient.paymentIntents.cancel(tx.transaction_id, {}, { idempotencyKey: `cancel-${order.uuid}` });
+
+                    await update('order')
+                        .given({ status: 'canceled', payment_status: 'canceled' })
+                        .where('order_id', '=', order.order_id)
+                        .execute(connection);
+
+                    // AUDIT TRAIL: Log cancellation with reason
+                    await execute(connection,
+                        `INSERT INTO order_activity (order_activity_order_id, comment, customer_notified, created_at) 
+                         VALUES ($1, $2, false, NOW())`,
+                        [order.order_id, `Canceled: Item ${outOfStockSku} out of stock`]
+                    );
+
+                    // TELEGRAM NOTIFICATION (Fail)
+                    await tgSend(
+                        `❌ <b>ORDER CANCELED (OOS/SIM)</b>\n` +
+                        `Order #${order.order_number}\n` +
+                        `Reason: ${forceFail ? 'Simulation Fail' : 'Out of stock'}\n` +
+                        `Items:\n${items.map(i => `• ${i.product_sku} x${i.qty}`).join("\n")}\n\n` +
+                        `Supplier action: NO DEDUCT`
+                    );
+                } catch (stripeError) {
+                    // AUDIT TRAIL: Log void failure
+                    await execute(connection,
+                        `INSERT INTO order_activity (order_activity_order_id, comment, customer_notified, created_at) 
+                         VALUES ($1, $2, false, NOW())`,
+                        [order.order_id, `Payment void failed: ${(stripeError as Error).message}`]
+                    );
+                    // Revert to authorized state for retry on next job run
+                    await update('order')
+                        .given({ payment_status: 'authorized' })
+                        .where('order_id', '=', order.order_id)
+                        .execute(connection);
+                    // Don't throw - allow job to continue processing other orders
+                }
             } else {
-                // Update to CANCELED
-                await execute(
-                    connection,
-                    `UPDATE "order" SET 
-                        status = 'canceled', 
-                        shipment_status = 'canceled', 
-                        payment_status = 'canceled', 
-                        updated_at = NOW() 
-                     WHERE order_id = ${order.order_id}`
-                );
-
-                await insert('order_activity').given({
-                    order_activity_order_id: order.order_id,
-                    comment: `Order canceled Out of stock (Supplier Sync)`,
-                    customer_notified: 0
-                }).execute(connection, false);
+                // If tx is missing but order is authorized, it might be an inconsistent state or manual change
+                info(`Skipping order ${order.order_number}: InStock=${allInStock}, TxFound=${!!tx}`);
             }
-
-            await commit(connection);
-            info(`Order #${order.order_number} processed successfully (${canFulfill ? 'Captured' : 'Canceled'}).`);
-        }
-
-    } catch (e) {
-        if (connection) {
-            try {
-                // @ts-ignore
-                if (connection.INTRANSACTION) {
-                    await rollback(connection);
-                }
-            } catch (rbError) {
-                error(rbError);
-            }
-        }
-        error(e);
-    } finally {
-        if (connection && typeof connection.release === 'function') {
-            try {
-                // @ts-ignore
-                if (connection._released !== true) {
-                    connection.release();
-                }
-            } catch (e) {
-                // Ignore double release Errors
-            }
+        } catch (e) {
+            error(`Failed to process order ${order.order_number}: ${(e as Error).message}`);
         }
     }
 }

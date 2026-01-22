@@ -1,6 +1,6 @@
 import { Card } from "@components/admin/cms/Card";
 import Area from "@components/common/Area";
-import { Field } from "@components/common/form/Field";
+import { InputField } from "@components/common/form/InputField";
 import { Checkbox } from "@components/common/form/fields/Checkbox";
 import { Form } from "@components/common/form/Form";
 import DummyColumnHeader from "@components/common/grid/headers/Dummy";
@@ -185,9 +185,9 @@ export default function ReviewGrid({
                 {
                   component: {
                     default: () => (
-                      <Field
+                      <InputField
                         type="text"
-                        id="keyword"
+                        name="keyword"
                         placeholder="Search"
                         value={
                           currentFilters.find((f) => f.key === "keyword")?.value

@@ -1,0 +1,7 @@
+{
+    "path": "/admin/import/fetch",
+    "methods": [
+        "POST"
+    ],
+    "isAdmin": true
+}

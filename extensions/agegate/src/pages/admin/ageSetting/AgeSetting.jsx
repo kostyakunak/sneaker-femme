@@ -1,7 +1,7 @@
 import { Card } from '@components/admin/cms/Card';
 import SettingMenu from '@components/admin/setting/SettingMenu';
 import Area from '@components/common/Area';
-import { Field } from '@components/common/form/Field';
+import { InputField } from '@components/common/form/InputField';
 import { Form } from '@components/common/form/Form';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -35,7 +35,7 @@ export default function AgeSetting({ saveSettingApi, setting: { minAge } }) {
                   coreComponents={[
                     {
                       component: {
-                        default: Field
+                        default: InputField
                       },
                       props: {
                         name: 'minAge',

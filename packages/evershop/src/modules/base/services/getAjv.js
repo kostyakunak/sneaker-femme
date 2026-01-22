@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import ajvErrors from 'ajv-errors';
+import ajvErrors from 'ajv-errors/dist/index.js';
 import addFormats from 'ajv-formats';
 
 export function getAjv() {

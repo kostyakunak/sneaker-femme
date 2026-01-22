@@ -127,11 +127,11 @@ export function ShippingMethods({
               methods.map((method: ShippingMethod) => (
                 <div
                   key={method.code}
-                  className={`border rounded-lg p-3 mb-3 cursor-pointer transition-colors ${
-                    currentValue === method.code
+                  className={`border rounded-lg p-3 mb-3 cursor-pointer transition-colors ${currentValue === method.code
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => !isProcessing && handleMethodSelect(method)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -142,25 +142,33 @@ export function ShippingMethods({
                         })}
                         value={method.code}
                         checked={currentValue === method.code}
-                        onChange={() => {}} // Controlled by onClick handler
+                        onChange={() => !isProcessing && handleMethodSelect(method)}
                         disabled={isProcessing}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                        id={`shipping-method-${method.code}`}
+                        onClick={(e) => e.stopPropagation()} // Let onChange handle it, or let it bubble? 
+                      // Better: let the parent div handle it, but prevent double firing.
+                      // Actually, radio onChange will fire if clicked. 
+                      // If we put onClick on parent, clicking radio bubbles to parent.
+                      // Parent onClick calls select. 
+                      // Clicking radio changes state natively? No, it's controlled via register?
+                      // react-hook-form register handles onChange.
+                      // But we are overriding onChange? 
+                      // If we pass specific onChange to {...register}, it gets overridden or overrides register?
+                      // Let's use simple approach: Parent div onClick handles everything.
+                      // Input pointer-events-none? No.
                       />
                       <div>
-                        <div className="font-normal text-gray-900 flex items-center">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              !isProcessing && handleMethodSelect(method);
-                            }}
-                          >
-                            {_(method.name)}
-                          </a>
+                        <label
+                          htmlFor={`shipping-method-${method.code}`}
+                          className="font-normal text-gray-900 flex items-center cursor-pointer"
+                          onClick={(e) => e.preventDefault()} // Prevent label click from triggering input click (double event) if parent handles it
+                        >
+                          <span>{_(method.name)}</span>
                           {isProcessing && currentValue === method.code && (
                             <div className="ml-2 w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                           )}
-                        </div>
+                        </label>
                         {method.description && (
                           <div className="text-sm text-gray-500 mt-1">
                             {_(method.description)}

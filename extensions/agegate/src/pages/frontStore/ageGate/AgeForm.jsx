@@ -1,4 +1,4 @@
-import { Field } from '@components/common/form/Field';
+import { InputField } from '@components/common/form/InputField';
 import { Form } from '@components/common/form/Form';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -34,11 +34,11 @@ function AgeForm({ action, homeUrl, failurePageUrl, setting: { minAge } }) {
         </div>
         <br />
         <div className="form-group">
-          <Field
+          <InputField
             type="text"
             name="age"
             value={1}
-            validationRules={['notEmpty']}
+            validation={{ required: 'Age is required' }}
           />
         </div>
       </Form>

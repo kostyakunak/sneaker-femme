@@ -1,0 +1,15 @@
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+.kpi-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+.kpi-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+}

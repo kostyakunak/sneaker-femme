@@ -1,5 +1,25 @@
 {
     "system": {
-        "file_storage": "s3"
+        "file_storage": "s3",
+        "extensions": [
+            {
+                "name": "supplier_sync",
+                "resolve": "extensions/supplier_sync",
+                "enabled": true,
+                "priority": 10
+            },
+            {
+                "name": "s3_file_storage",
+                "resolve": "extensions/s3_file_storage",
+                "enabled": true,
+                "priority": 10
+            },
+            {
+                "name": "product_review",
+                "resolve": "extensions/product_review",
+                "enabled": true,
+                "priority": 10
+            }
+        ]
     }
 }

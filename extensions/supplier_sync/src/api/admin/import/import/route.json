@@ -1,0 +1,7 @@
+{
+    "path": "/admin/import/product",
+    "methods": [
+        "POST"
+    ],
+    "isAdmin": true
+}

@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 export default function NewProductButton({ newProductUrl }) {
-  return <Button url={newProductUrl} title="New Product" />;
+  // RESELLER MODEL: Hide "New Product" button from grid
+  // All products must be created via "Import by SKU"
+  return null;
+
+  // Uncomment to restore manual product creation
+  // return <Button url={newProductUrl} title="New Product" />;
 }
 
 NewProductButton.propTypes = {

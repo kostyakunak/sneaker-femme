@@ -40,7 +40,7 @@ export function parseRoute(jsonPath, isAdmin = false, isApi = false) {
     );
   }
   const routeJson = jsonParse(jsonPath);
-  const methods = routeJson?.methods.map((m) => m.toUpperCase()) || [];
+  const methods = routeJson?.methods?.map((m) => m.toUpperCase()) || [];
   let routePath = routeJson?.path;
   if (validateRoute(methods, routePath, routePath) === true) {
     if (isApi === true) {

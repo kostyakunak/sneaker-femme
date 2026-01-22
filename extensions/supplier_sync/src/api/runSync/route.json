@@ -1,0 +1,8 @@
+{
+    "id": "runSync",
+    "path": "/admin/run-sync",
+    "methods": [
+        "POST"
+    ],
+    "access": "private"
+}

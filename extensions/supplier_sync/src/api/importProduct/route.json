@@ -1,0 +1,8 @@
+{
+    "id": "importProduct",
+    "path": "/admin/supplier-import",
+    "methods": [
+        "POST"
+    ],
+    "access": "private"
+}

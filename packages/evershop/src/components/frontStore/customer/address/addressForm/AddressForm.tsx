@@ -21,6 +21,36 @@ interface CustomerAddressFormProps {
   areaId?: string;
   fieldNamePrefix?: string;
 }
+const UA_PROVINCES = [
+  { value: 'UA-71', label: 'Черкаська область' },
+  { value: 'UA-74', label: 'Чернігівська область' },
+  { value: 'UA-77', label: 'Чернівецька область' },
+  { value: 'UA-12', label: 'Дніпропетровська область' },
+  { value: 'UA-14', label: 'Донецька область' },
+  { value: 'UA-26', label: 'Івано-Франківська область' },
+  { value: 'UA-63', label: 'Харківська область' },
+  { value: 'UA-65', label: 'Херсонська область' },
+  { value: 'UA-68', label: 'Хмельницька область' },
+  { value: 'UA-35', label: 'Кіровоградська область' },
+  { value: 'UA-30', label: 'Київ' },
+  { value: 'UA-32', label: 'Київська область' },
+  // { value: 'UA-09', label: 'Луганська область' }, // Temporarily removed due to full occupation
+  { value: 'UA-46', label: 'Львівська область' },
+  { value: 'UA-48', label: 'Миколаївська область' },
+  { value: 'UA-51', label: 'Одеська область' },
+  { value: 'UA-53', label: 'Полтавська область' },
+  { value: 'UA-56', label: 'Рівненська область' },
+  // { value: 'UA-43', label: 'Автономна Республіка Крим' }, // Temporarily removed due to occupation
+  // { value: 'UA-40', label: "Севастополь" }, // Temporarily removed due to occupation
+  { value: 'UA-59', label: 'Сумська область' },
+  { value: 'UA-61', label: 'Тернопільська область' },
+  { value: 'UA-05', label: 'Вінницька область' },
+  { value: 'UA-07', label: 'Волинська область' },
+  { value: 'UA-21', label: 'Закарпатська область' },
+  { value: 'UA-23', label: 'Запорізька область' },
+  { value: 'UA-18', label: 'Житомирська область' }
+];
+
 export function CustomerAddressForm({
   allowCountries = [],
   address = {},
@@ -35,8 +65,21 @@ export function CustomerAddressForm({
 
   const selectedCountry = watch(
     getFieldName('country'),
-    address?.country?.code || ''
+    'UA' // Force default to UA
   );
+
+  React.useEffect(() => {
+    // Force set country to UA on mount if not set
+    if (!address?.country?.code || address?.country?.code !== 'UA') {
+      setValue(getFieldName('country'), 'UA');
+    }
+  }, []); // Run once on mount
+
+  // Calculate provinces based on selected country
+  const currentProvinces = selectedCountry === 'UA'
+    ? UA_PROVINCES
+    : (allowCountries.find(c => c.value === selectedCountry)?.provinces || []);
+
   return (
     <Area
       id={areaId}
@@ -99,19 +142,21 @@ export function CustomerAddressForm({
         {
           component: {
             default: (
-              <SelectField
-                defaultValue={address?.country?.code || ''}
-                label={_('Country')}
-                name={getFieldName('country')}
-                placeholder={_('Country')}
-                onChange={(value) => {
-                  setValue(getFieldName('country'), value.target.value);
-                  setValue(getFieldName('province'), '');
-                }}
-                required
-                validation={{ required: _('Country is required') }}
-                options={allowCountries}
-              />
+              <div className="hidden">
+                <SelectField
+                  defaultValue={'UA'}
+                  label={_('Country')}
+                  name={getFieldName('country')}
+                  placeholder={_('Country')}
+                  onChange={(value) => {
+                    setValue(getFieldName('country'), value.target.value);
+                    setValue(getFieldName('province'), '');
+                  }}
+                  required
+                  validation={{ required: _('Country is required') }}
+                  options={allowCountries.length > 0 ? allowCountries : [{ value: 'UA', label: 'Ukraine' }]}
+                />
+              </div>
             )
           },
           sortOrder: 50
@@ -120,11 +165,7 @@ export function CustomerAddressForm({
           component: {
             default: (
               <ProvinceAndPostcode
-                provinces={
-                  allowCountries.find(
-                    (country) => country.value === selectedCountry
-                  )?.provinces || []
-                }
+                provinces={currentProvinces}
                 province={address?.province || { code: '' }}
                 postcode={address?.postcode || ''}
                 getFieldName={getFieldName}
@@ -132,6 +173,16 @@ export function CustomerAddressForm({
             )
           },
           sortOrder: 60
+        },
+        {
+          component: {
+            default: (
+              <p className="text-sm text-gray-500 mt-2 italic">
+                {_('Примiтка: доставка на тимчасово окуповані території не здійснюється.')}
+              </p>
+            )
+          },
+          sortOrder: 70
         }
       ]}
     />

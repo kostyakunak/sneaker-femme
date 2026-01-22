@@ -33,6 +33,27 @@ function Actions({ orders = [], selectedIds = [] }) {
     {
       name: 'Mark as shipped',
       onAction: () => {
+        const authorizedOrders = orders.filter((o) => selectedIds.includes(o.uuid) && o.paymentStatus.code === 'authorized');
+
+        if (authorizedOrders.length > 0) {
+          openAlert({
+            heading: 'Cannot Ship Authorized Orders',
+            content: (
+              <div className="text-critical">
+                {authorizedOrders.length} of the selected orders are still <b>Authorized</b> (Awaiting Confirmation).
+                <br /><br />
+                Please wait for the Supplier Sync to confirm stock and capture payment (Status: Paid) before shipping.
+              </div>
+            ),
+            primaryAction: {
+              title: 'Close',
+              onAction: closeAlert,
+              variant: 'primary'
+            }
+          });
+          return;
+        }
+
         openAlert({
           heading: `Fullfill ${selectedIds.length} orders`,
           content: (
@@ -175,6 +196,48 @@ export default function OrderGrid({
                             }}
                           >
                             Awaiting Confirmation
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn ${currentFilters.find(
+                              (f) =>
+                                f.key === 'payment_status' &&
+                                f.value === 'paid'
+                            )
+                              ? 'btn-primary'
+                              : 'btn-default'
+                              } whitespace-nowrap`}
+                            onClick={() => {
+                              const url = new URL(document.location);
+                              url.searchParams.set(
+                                'payment_status',
+                                'paid'
+                              );
+                              window.location.href = url.href;
+                            }}
+                          >
+                            Confirmed / Paid
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn ${currentFilters.find(
+                              (f) =>
+                                f.key === 'payment_status' &&
+                                f.value === 'canceled'
+                            )
+                              ? 'btn-primary'
+                              : 'btn-default'
+                              } whitespace-nowrap`}
+                            onClick={() => {
+                              const url = new URL(document.location);
+                              url.searchParams.set(
+                                'payment_status',
+                                'canceled'
+                              );
+                              window.location.href = url.href;
+                            }}
+                          >
+                            Canceled
                           </button>
                         </div>
                       )

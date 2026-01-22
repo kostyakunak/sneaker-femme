@@ -17,6 +17,12 @@ export default {
       const allowedCountries = await select('country')
         .from('shipping_zone')
         .execute(pool);
+
+      // Always include Ukraine
+      if (!allowedCountries.find(c => c.country === 'UA')) {
+        allowedCountries.push({ country: 'UA' });
+      }
+
       return countries.filter((c) =>
         allowedCountries.find((p) => p.country === c.code)
       );

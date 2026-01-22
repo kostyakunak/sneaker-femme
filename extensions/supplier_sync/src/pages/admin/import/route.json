@@ -1,0 +1,8 @@
+{
+    "id": "supplierImport",
+    "path": "/admin/supplier-import",
+    "methods": [
+        "GET"
+    ],
+    "access": "private"
+}

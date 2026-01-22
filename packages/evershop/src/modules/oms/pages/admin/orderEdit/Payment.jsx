@@ -32,14 +32,25 @@ export default function OrderSummary({
         <div className="flex space-x-2">
           <Circle variant={paymentStatus.badge} />
           <span className="block self-center">
-            {`${paymentStatus.name || 'Unknown'} - ${
-              paymentMethodName || 'Unknown'
-            }`}
+            {`${paymentStatus.name || 'Unknown'} - ${paymentMethodName || 'Unknown'
+              }`}
           </span>
         </div>
       }
     >
       <Card.Session>
+        {paymentStatus.code === 'authorized' && (
+          <div className="p-4 mb-4 border-l-4 border-warning bg-warning-faded text-warning-contrast rounded-r">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-warning-contrast">Checking with supplier...</h3>
+                <div className="mt-2 text-sm text-warning-contrast">
+                  <p>Payment Authorized. Do not ship until stock is confirmed and status becomes <b>Paid</b>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <Area
           id="orderSummaryBlock"
           orderId={orderId}

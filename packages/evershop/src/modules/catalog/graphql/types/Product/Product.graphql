@@ -21,6 +21,8 @@ type Product {
   supplierPrice: Float
   supplierCurrency: String
   supplierUpdatedAt: String
+  supplierSku: String
+  supplierSource: String
 }
 
 """
