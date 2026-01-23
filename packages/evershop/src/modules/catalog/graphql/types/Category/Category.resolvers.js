@@ -32,19 +32,19 @@ export default {
       const result = await query.load(pool);
       return result
         ? {
-            ...camelCase(result),
-            products: async (_, { filters = [] }) => {
-              const query = await getProductsByCategoryBaseQuery(
-                result.category_id,
-                true
-              );
-              const root = new ProductCollection(query);
-              // Can we merge 2 filters here and the filters take higher priority. Each is an array [{key, operation, value}]
-              const mergedFilters = [...filtersFromUrl, ...filters];
-              await root.init(mergedFilters, false);
-              return root;
-            }
+          ...camelCase(result),
+          products: async (_, { filters = [] }) => {
+            const query = await getProductsByCategoryBaseQuery(
+              result.category_id,
+              true
+            );
+            const root = new ProductCollection(query);
+            // Can we merge 2 filters here and the filters take higher priority. Each is an array [{key, operation, value}]
+            const mergedFilters = [...filtersFromUrl, ...filters];
+            await root.init(mergedFilters, false);
+            return root;
           }
+        }
         : null;
     },
     categories: async (_, { filters = [] }, { user }) => {
@@ -55,6 +55,15 @@ export default {
     }
   },
   Category: {
+    showProducts: (category) => {
+      return category.showProducts === true || category.showProducts === 1 ? 1 : 0;
+    },
+    status: (category) => {
+      return category.status === true || category.status === 1 ? 1 : 0;
+    },
+    includeInNav: (category) => {
+      return category.includeInNav === true || category.includeInNav === 1 ? 1 : 0;
+    },
     products: async (category, { filters = [] }, { user }) => {
       // This is a hack for mycategory
       if (typeof category.products === 'function') {

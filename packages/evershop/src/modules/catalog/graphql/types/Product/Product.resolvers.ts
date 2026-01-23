@@ -56,6 +56,15 @@ export default {
           }
         ];
       }
+    },
+    status: (product) => {
+      return product.status === true || product.status === 1 ? 1 : 0;
+    },
+    weight: (product) => {
+      return product.weight || 0;
+    },
+    visibility: (product) => {
+      return product.visibility === true || product.visibility === 1 ? 1 : 0;
     }
   },
   Query: {
