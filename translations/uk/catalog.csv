@@ -1,32 +1,15 @@
-Featured collection,  Рекомендовані товари
-SHOP BY,  ФІЛЬТРИ
-Sort By,  Сортувати за
-There is no product to display,  Немає товарів з такими параметрами
-${count} products,  Кількість товарів: ${count}
-Search results for ${keyword},  Результати пошуку для ${keyword}
-Price,  Ціна
-Name,  Назва
-Default,  За замовчуванням
-Category,  Категорія
-Search,  Пошук
-Adding...,  Додавання...
-Add to Cart,  Додати до кошика
-No products found,  Товари не знайдено
-SKU ${sku},  SKU: ${sku}
-In Stock,  В наявності
-Out of Stock,  Немає в наявності
-${count} Products,  Кількість товарів: ${count}
-Product Description,  Опис товару
-Filter Products,  Фільтрувати товари
-Clear All,  Очистити все
-Apply Filters,  Застосувати фільтри
-Quantity,  Кількість
-Quantity must be at least 1,  Кількість повинна бути не менше 1
-Quantity is required,  Кількість обов'язкова
-Failed to add product to cart,  Не вдалося додати товар до кошика
-SOLD OUT,  РОЗПРОДАНО
-No categories found for "${term}",  Категорії не знайдено для ${\1}
-Show all ${count} options,  Показати всі ${count} опції
-No options found for "${code}",  Опції не знайдено для ${code}
-Categories,  Категорії
-Active Filters,  Активні фільтри
+Featured collection, Рекомендовані товари
+Featured Products, Рекомендовані товари
+SHOP BY, ФІЛЬТРИ
+Sort By, Сортувати за
+There is no product to display, Немає товарів з такими параметрами
+${count} products, Кількість товарів: ${count}
+Search results for ${keyword}, Результати пошуку для ${keyword}
+Price, Ціна
+Name, Назва
+Default, За замовчуванням
+Category, Категорія
+Search, Пошук
+Add to cart, Додати до кошика
+View product, Переглянути товар
+Product Filters, Фільтри товарів

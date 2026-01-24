@@ -27,16 +27,16 @@ export default function Inventory({ product }: InventoryProps) {
   const isManagedBySupplier = !!product?.supplierSku;
 
   return (
-    <Card title={_('Inventory')} subdued>
+    <Card title="Inventory" subdued>
       {isManagedBySupplier && (
         <div className="p-4 mb-4 border-l-4 border-info bg-info-faded text-info-contrast rounded-r">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-info-contrast">{_('Managed by Supplier')}</h3>
+              <h3 className="text-sm font-medium text-info-contrast">Managed by Supplier</h3>
               <div className="mt-2 text-sm text-info-contrast">
-                <p>{_('Inventory is automatically synced. Manual changes are disabled.')}</p>
+                <p>Inventory is automatically synced. Manual changes are disabled.</p>
                 {product?.supplierUpdatedAt && (
-                  <p className="mt-1 font-mono text-xs opacity-75">{_('Last Sync:')} {new Date(product.supplierUpdatedAt).toLocaleString()}</p>
+                  <p className="mt-1 font-mono text-xs opacity-75">Last Sync: {new Date(product.supplierUpdatedAt).toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -46,10 +46,10 @@ export default function Inventory({ product }: InventoryProps) {
       <Card.Session>
         <RadioGroupField
           name="manage_stock"
-          label={_('Manage Stock')}
+          label="Manage Stock"
           options={[
-            { value: 1, label: _('Yes') },
-            { value: 0, label: _('No') }
+            { value: 1, label: 'Yes' },
+            { value: 0, label: 'No' }
           ]}
           defaultValue={inventory.manageStock === 0 ? 0 : 1}
           disabled={isManagedBySupplier}
@@ -59,10 +59,10 @@ export default function Inventory({ product }: InventoryProps) {
       <Card.Session>
         <RadioGroupField
           name="stock_availability"
-          label={_('Stock Availability')}
+          label="Stock Availability"
           options={[
-            { value: 1, label: _('In Stock') },
-            { value: 0, label: _('Out of Stock') }
+            { value: 1, label: 'In Stock' },
+            { value: 0, label: 'Out of Stock' }
           ]}
           defaultValue={inventory.stockAvailability === 0 ? 0 : 1}
           disabled={isManagedBySupplier}
@@ -73,8 +73,8 @@ export default function Inventory({ product }: InventoryProps) {
         <NumberField
           name="qty"
           defaultValue={inventory.qty}
-          placeholder={_('Quantity')}
-          label={_('Quantity')}
+          placeholder="Quantity"
+          label="Quantity"
           readOnly={isManagedBySupplier}
           helperText={isManagedBySupplier ? (
             <span className="text-interactive">

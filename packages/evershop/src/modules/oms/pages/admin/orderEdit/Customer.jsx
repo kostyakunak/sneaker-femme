@@ -2,7 +2,6 @@ import { Card } from '@components/admin/Card';
 import { AddressSummary } from '@components/common/customer/address/AddressSummary';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 export default function Customer({
   order: {
@@ -14,7 +13,7 @@ export default function Customer({
   }
 }) {
   return (
-    <Card title={_('Customer')}>
+    <Card title="Customer">
       <Card.Session>
         {customerUrl && (
           <a
@@ -26,7 +25,7 @@ export default function Customer({
         )}
         {!customerUrl && <span>{customerEmail} (Guest Checkout)</span>}
       </Card.Session>
-      <Card.Session title={_('Contact information')}>
+      <Card.Session title="Contact information">
         <div>
           <a href="#" className="text-interactive hover:underline">
             {customerEmail}
@@ -36,10 +35,10 @@ export default function Customer({
           <span>{shippingAddress.telephone}</span>
         </div>
       </Card.Session>
-      <Card.Session title={_('Shipping Address')}>
+      <Card.Session title="Shipping Address">
         <AddressSummary address={shippingAddress} />
       </Card.Session>
-      <Card.Session title={_('Billing address')}>
+      <Card.Session title="Billing address">
         <AddressSummary address={billingAddress} />
       </Card.Session>
     </Card>

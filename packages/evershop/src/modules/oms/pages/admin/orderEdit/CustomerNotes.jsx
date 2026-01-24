@@ -2,11 +2,10 @@ import { Card } from '@components/admin/Card';
 import Area from '@components/common/Area';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 export default function CustomerNotes({ order: { shippingNote } }) {
   return (
-    <Card title={_('Customer notes')}>
+    <Card title="Customer notes">
       <Card.Session>
         <Area
           id="orderEditCustomerNotes"
@@ -17,7 +16,7 @@ export default function CustomerNotes({ order: { shippingNote } }) {
                   <div>
                     {shippingNote || (
                       <span className="text-border">
-                        {_('No notes from customer')}
+                        No notes from customer
                       </span>
                     )}
                   </div>

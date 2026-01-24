@@ -9,7 +9,6 @@ import { SubTotal } from './payment/SubTotal.js';
 import { Tax } from './payment/Tax.js';
 import { Total } from './payment/Total.js';
 import './Payment.scss';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 export default function OrderSummary({
   order: {
@@ -33,7 +32,8 @@ export default function OrderSummary({
         <div className="flex space-x-2">
           <Circle variant={paymentStatus.badge} />
           <span className="block self-center">
-            {`${paymentStatus.name || _('Unknown')} - ${paymentMethodName || _('Unknown')}`}
+            {`${paymentStatus.name || 'Unknown'} - ${paymentMethodName || 'Unknown'
+              }`}
           </span>
         </div>
       }
@@ -43,9 +43,9 @@ export default function OrderSummary({
           <div className="p-4 mb-4 border-l-4 border-warning bg-warning-faded text-warning-contrast rounded-r">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-warning-contrast">{_('Checking with supplier...')}</h3>
+                <h3 className="text-sm font-medium text-warning-contrast">Checking with supplier...</h3>
                 <div className="mt-2 text-sm text-warning-contrast">
-                  <p>{_('Payment Authorized. Do not ship until stock is confirmed and status becomes')} <b>{_('Paid')}</b>.</p>
+                  <p>Payment Authorized. Do not ship until stock is confirmed and status becomes <b>Paid</b>.</p>
                 </div>
               </div>
             </div>

@@ -2,7 +2,6 @@
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import './Activities.scss';
 
 export default function Activities({ order: { activities = [] } }) {
@@ -46,7 +45,7 @@ export default function Activities({ order: { activities = [] } }) {
 
   return (
     <div className="order-activities">
-      <h3 className="title">{_('Activities')}</h3>
+      <h3 className="title">Activities</h3>
       <ul>
         {dailyActivities.map((group, i) => (
           <li key={i} className="group">
@@ -59,7 +58,7 @@ export default function Activities({ order: { activities = [] } }) {
                     <span>{a.comment}</span>
                     {parseInt(a.customerNotified, 10) === 1 && (
                       <span className="customer-notified">
-                        {_('Customer was notified')}
+                        Customer was notified
                       </span>
                     )}
                   </div>

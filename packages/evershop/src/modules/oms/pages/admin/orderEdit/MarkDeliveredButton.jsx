@@ -2,7 +2,6 @@ import Button from '@components/common/Button';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { toast } from 'react-toastify';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 export default function MarkDeliveredButton({
   order: {
@@ -17,7 +16,7 @@ export default function MarkDeliveredButton({
   } else {
     return (
       <Button
-        title={_('Mark Delivered')}
+        title="Mark Delivered"
         variant="primary"
         onAction={async () => {
           // Call the updateShipmentApi with the status set to "delivered" using fetch post request, include credentials

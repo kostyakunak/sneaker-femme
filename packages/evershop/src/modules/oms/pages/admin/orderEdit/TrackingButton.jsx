@@ -1,7 +1,6 @@
 import Button from '@components/common/Button';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 export default function TrackingButton({ order: { shipment }, carriers }) {
   if (!shipment || !shipment.trackingNumber || !shipment.carrier) {
@@ -22,7 +21,7 @@ export default function TrackingButton({ order: { shipment }, carriers }) {
 
   return (
     <Button
-      title={_('Track shipment')}
+      title="Track shipment"
       variant="primary"
       onAction={() => {
         window.open(url, '_blank').focus();

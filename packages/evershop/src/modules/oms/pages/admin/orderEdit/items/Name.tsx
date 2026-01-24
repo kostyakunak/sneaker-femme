@@ -1,5 +1,4 @@
 import React from 'react';
-import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import { ItemVariantOptions } from './ItemVariantOptions.js';
 
 interface NameProps {
@@ -27,7 +26,7 @@ export function Name({
           </span>
         </div>
         <div className="text-gray-500">
-          <span className="font-semibold">{_('SKU')}: </span>
+          <span className="font-semibold">SKU: </span>
           <span>{productSku}</span>
         </div>
         <ItemVariantOptions options={variantOptions} />
