@@ -29,25 +29,6 @@ export function Og({
   twitterImage
 }: OgProps) {
   return (
-    <>
-      <MetaOpenGraph
-        type={type}
-        title={title}
-        description={description}
-        image={image}
-        url={url}
-        siteName={siteName}
-      />
-      {locale && <meta property="og:locale" content={locale} />}
-      <MetaTwitterCard
-        card={twitterCard}
-        site={twitterSite}
-        creator={twitterCreator}
-        title={title}
-        description={description}
-        image={twitterImage || image}
-      />
-    </>
+    <><MetaOpenGraph type={type} title={title} description={description} image={image} url={url} siteName={siteName} />{locale && <meta property="og:locale" content={locale} />}<MetaTwitterCard card={twitterCard} site={twitterSite} creator={twitterCreator} title={title} description={description} image={twitterImage || image} /></>
   );
 }
-

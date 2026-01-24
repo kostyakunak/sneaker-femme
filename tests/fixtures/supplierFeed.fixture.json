@@ -1,0 +1,20 @@
+[
+    {
+        "sku": "SKU-001",
+        "price": 85.00,
+        "qty": 25,
+        "status": "in_stock"
+    },
+    {
+        "sku": "SKU-002",
+        "price": 120.00,
+        "qty": 0,
+        "status": "out_of_stock"
+    },
+    {
+        "sku": "SKU-VARIANT-42",
+        "price": 50.00,
+        "qty": 5,
+        "status": "in_stock"
+    }
+]

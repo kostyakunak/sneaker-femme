@@ -1,8 +1,8 @@
 import { Card } from '@components/admin/Card.js';
 import { NumberField } from '@components/common/form/NumberField.js';
 import { RadioGroupField } from '@components/common/form/RadioGroupField.js';
-import { _ } from '../../../../../lib/locale/translate/_.js';
 import React from 'react';
+import { _ } from '../../../../../lib/locale/translate/_.js';
 
 interface InventoryProps {
   product:

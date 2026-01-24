@@ -1,5 +1,5 @@
 import { NavigationItemGroup } from '@components/admin/NavigationItemGroup';
-import { HomeIcon } from '@heroicons/react/24/solid';
+import { HomeIcon } from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
 import React from 'react';
 

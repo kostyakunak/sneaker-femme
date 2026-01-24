@@ -1,0 +1,6 @@
+{
+    "path": "/admin/supplier-sync-stats",
+    "methods": [
+        "GET"
+    ]
+}

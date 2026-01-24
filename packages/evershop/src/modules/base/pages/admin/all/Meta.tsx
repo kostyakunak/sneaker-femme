@@ -12,12 +12,19 @@ interface SeoMetaProps {
 export default function SeoMeta({
   pageInfo: { title, description }
 }: SeoMetaProps) {
-  return (
-    <>
-      <Title title={title} />
-      <Meta name="description" content={description} />
-    </>
-  );
+  // IMPORTANT:
+  // React ругается на пробельные текстовые ноды внутри <head>.
+  // Если возвращать несколько JSX‑элементов рядом (`<Title />\n<Meta />`),
+  // то между ними появляется whitespace‑нода. Поэтому вместо фрагмента
+  // возвращаем массив элементов – так лишний текстовый нод не создаётся.
+  const nodes = [
+    <Title key="title" title={title} />,
+    description ? (
+      <Meta key="description" name="description" content={description} />
+    ) : null
+  ].filter(Boolean) as React.ReactElement[];
+
+  return nodes;
 }
 
 export const layout = {

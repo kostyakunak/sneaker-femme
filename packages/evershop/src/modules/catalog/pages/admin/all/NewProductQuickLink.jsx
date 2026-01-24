@@ -1,9 +1,9 @@
 import { NavigationItem } from '@components/admin/NavigationItem.js';
-import { ArchiveBoxIcon } from '@heroicons/react/24/solid';
+import { ArchiveBoxIcon } from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export default function NewProductQuickLink({ productNew, supplierImportUrl }) {
+export default function NewProductQuickLink({ productNew }) {
   // RESELLER MODEL: Hide "New Product" button, force creation via Import
   // Uncomment the return below to restore manual product creation
   return null;
@@ -18,8 +18,7 @@ export default function NewProductQuickLink({ productNew, supplierImportUrl }) {
 }
 
 NewProductQuickLink.propTypes = {
-  productNew: PropTypes.string.isRequired,
-  supplierImportUrl: PropTypes.string
+  productNew: PropTypes.string.isRequired
 };
 
 export const layout = {
@@ -30,6 +29,5 @@ export const layout = {
 export const query = `
   query Query {
     productNew: url(routeId:"productNew")
-    supplierImportUrl: url(routeId:"supplierImport")
   }
 `;

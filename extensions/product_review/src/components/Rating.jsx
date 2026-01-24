@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import './Rating.scss';
-import StartIcon from '@heroicons/react/24/solid/esm/StarIcon';
+import { StarIcon as StartIcon } from '@heroicons/react/24/solid';
 
 function Rating({ rating }) {
   return (

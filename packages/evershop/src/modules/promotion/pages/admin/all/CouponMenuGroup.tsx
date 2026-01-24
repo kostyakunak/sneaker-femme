@@ -1,5 +1,5 @@
 import { NavigationItemGroup } from '@components/admin/NavigationItemGroup.js';
-import { GiftIcon } from '@heroicons/react/24/solid';
+import { GiftIcon } from '@heroicons/react/20/solid';
 import React from 'react';
 
 interface CouponMenuGroupProps {

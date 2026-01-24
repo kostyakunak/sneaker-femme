@@ -1,8 +1,8 @@
 import { NavigationItemGroup } from '@components/admin/NavigationItemGroup';
-import { ArchiveBoxIcon } from '@heroicons/react/24/solid';
-import { HashtagIcon } from '@heroicons/react/24/solid';
-import { LinkIcon } from '@heroicons/react/24/solid';
-import { TagIcon } from '@heroicons/react/24/solid';
+import { ArchiveBoxIcon } from '@heroicons/react/20/solid';
+import { HashtagIcon } from '@heroicons/react/20/solid';
+import { LinkIcon } from '@heroicons/react/20/solid';
+import { TagIcon } from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
 import React from 'react';
 

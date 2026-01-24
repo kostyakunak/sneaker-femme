@@ -1,6 +1,6 @@
 import { NavigationItemGroup } from '@components/admin/NavigationItemGroup';
-import { DocumentIcon } from '@heroicons/react/24/solid';
-import { PuzzlePieceIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon } from '@heroicons/react/20/solid';
+import { PuzzlePieceIcon } from '@heroicons/react/20/solid';
 import PropTypes from 'prop-types';
 import React from 'react';
 

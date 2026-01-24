@@ -1,5 +1,5 @@
 import { NavigationItemGroup } from '@components/admin/NavigationItemGroup.js';
-import { CogIcon } from '@heroicons/react/24/solid';
+import { CogIcon } from '@heroicons/react/20/solid';
 import React from 'react';
 
 interface CmsMenuGroupProps {

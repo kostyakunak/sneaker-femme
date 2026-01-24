@@ -19,7 +19,8 @@ export function ProductSingleForm() {
     sku,
     inventory: { isInStock }
   } = useProduct();
-  const form = useForm();
+  const form = useForm({ defaultValues: { qty: 1 } });
+  const qty = form.watch('qty') || 1;
 
   return (
     <Form id="productForm" method="POST" submitBtn={false} form={form}>
@@ -47,12 +48,41 @@ export function ProductSingleForm() {
           {
             component: {
               default: (
+                <div className="product__quantity py-4">
+                  <label className="block text-sm font-medium mb-2">
+                    {_('Quantity')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    defaultValue="1"
+                    {...form.register('qty', {
+                      valueAsNumber: true,
+                      min: { value: 1, message: _('Quantity must be at least 1') },
+                      required: _('Quantity is required')
+                    })}
+                    className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
+                  />
+                  {form.formState.errors.qty && (
+                    <span className="text-red-500 text-sm">
+                      {form.formState.errors.qty.message}
+                    </span>
+                  )}
+                </div>
+              )
+            },
+            sortOrder: 15,
+            id: 'quantitySelector'
+          },
+          {
+            component: {
+              default: (
                 <AddToCart
                   product={{
                     sku: sku,
                     isInStock: isInStock
                   }}
-                  qty={1}
+                  qty={qty}
                   onSuccess={() => {
                     // To show the mini cart after adding a product to cart
                   }}

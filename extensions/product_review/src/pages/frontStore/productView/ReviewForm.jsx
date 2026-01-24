@@ -2,7 +2,7 @@ import { InputField } from "@components/common/form/InputField";
 import { TextareaField } from "@components/common/form/TextareaField";
 import { Form } from "@components/common/form/Form";
 import { _ } from "@evershop/evershop/lib/locale/translate/_";
-import StartIcon from "@heroicons/react/24/solid/esm/StarIcon";
+import { StarIcon as StartIcon } from '@heroicons/react/24/solid';
 import PropTypes from "prop-types";
 import React from "react";
 

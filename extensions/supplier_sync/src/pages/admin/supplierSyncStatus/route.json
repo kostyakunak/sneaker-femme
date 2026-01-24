@@ -1,0 +1,9 @@
+{
+    "path": "/admin/supplier-sync",
+    "methods": [
+        "GET"
+    ],
+    "access": "private",
+    "title": "Supplier Sync Status",
+    "description": "Monitor and manage supplier product and order synchronization."
+}

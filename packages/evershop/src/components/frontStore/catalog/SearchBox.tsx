@@ -1,6 +1,6 @@
 import { Image } from '@components/common/Image.js';
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
-import { XMarkIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon } from '@heroicons/react/20/solid';
 import React, { useRef, useState, ReactNode, useCallback } from 'react';
 import { useClient } from 'urql';
 

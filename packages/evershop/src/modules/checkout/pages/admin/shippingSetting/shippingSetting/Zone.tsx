@@ -1,7 +1,7 @@
 import { Card } from '@components/admin/Card.js';
 import { Modal } from '@components/common/modal/Modal.js';
 import { useModal } from '@components/common/modal/useModal.js';
-import { MapPinIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon } from '@heroicons/react/20/solid';
 import axios from 'axios';
 import React from 'react';
 import { toast } from 'react-toastify';

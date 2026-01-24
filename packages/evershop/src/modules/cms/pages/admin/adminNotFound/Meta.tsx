@@ -3,12 +3,12 @@ import { Title } from '@components/common/Title.js';
 import React from 'react';
 
 export default function SeoMeta() {
-  return (
-    <>
-      <Title title="Page Not Found" />
-      <Meta name="description" content="Page Not Found" />
-    </>
-  );
+  const nodes = [
+    <Title key="title" title="Page Not Found" />,
+    <Meta key="description" name="description" content="Page Not Found" />
+  ];
+
+  return nodes;
 }
 
 export const layout = {

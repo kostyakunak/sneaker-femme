@@ -79,11 +79,10 @@ export const ProductList: React.FC<ProductListProps> = ({
       {products.map((product) => (
         <div
           key={product.productId}
-          className={`product__list__item ${
-            layout === 'list'
-              ? 'product__list__item__list'
-              : 'product__list__item__grid'
-          }`}
+          className={`product__list__item ${layout === 'list'
+            ? 'product__list__item__list'
+            : 'product__list__item__grid'
+            }`}
         >
           {renderItem ? (
             renderItem(product)

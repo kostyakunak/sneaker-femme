@@ -1,0 +1,7 @@
+{
+    "path": "/admin/supplier-dash",
+    "methods": [
+        "GET"
+    ],
+    "access": "private"
+}

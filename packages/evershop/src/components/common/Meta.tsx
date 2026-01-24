@@ -5,11 +5,11 @@ interface BaseMetaProps {
   charset?: string;
   content?: string;
   httpEquiv?:
-    | 'content-type'
-    | 'default-style'
-    | 'refresh'
-    | 'x-ua-compatible'
-    | 'content-security-policy';
+  | 'content-type'
+  | 'default-style'
+  | 'refresh'
+  | 'x-ua-compatible'
+  | 'content-security-policy';
   lang?: string;
   scheme?: string;
   media?: string;
@@ -17,17 +17,17 @@ interface BaseMetaProps {
 
 interface NameMetaProps extends BaseMetaProps {
   name:
-    | 'description'
-    | 'keywords'
-    | 'author'
-    | 'viewport'
-    | 'robots'
-    | 'generator'
-    | 'theme-color'
-    | 'application-name'
-    | 'color-scheme'
-    | 'referrer'
-    | string;
+  | 'description'
+  | 'keywords'
+  | 'author'
+  | 'viewport'
+  | 'robots'
+  | 'generator'
+  | 'theme-color'
+  | 'application-name'
+  | 'color-scheme'
+  | 'referrer'
+  | string;
   property?: never;
   itemProp?: never;
 }
@@ -49,11 +49,11 @@ interface ItemPropMetaProps extends BaseMetaProps {
 
 interface HttpEquivMetaProps extends BaseMetaProps {
   httpEquiv:
-    | 'content-type'
-    | 'default-style'
-    | 'refresh'
-    | 'x-ua-compatible'
-    | 'content-security-policy';
+  | 'content-type'
+  | 'default-style'
+  | 'refresh'
+  | 'x-ua-compatible'
+  | 'content-security-policy';
   content: string;
   name?: never;
   property?: never;
@@ -124,7 +124,7 @@ function validateMetaProps(props: any): { isValid: boolean; errors: string[] } {
   const needsContent = REQUIRED_CONTENT_ATTRIBUTES.some(
     (attr) => props[attr] !== undefined
   );
-  if (needsContent && !props.content) {
+  if (needsContent && props.content === undefined) {
     errors.push(
       'Meta tag with name, property, itemProp, or httpEquiv must have content attribute'
     );
@@ -136,8 +136,7 @@ function validateMetaProps(props: any): { isValid: boolean; errors: string[] } {
 
   if (props.httpEquiv && !VALID_HTTP_EQUIV.includes(props.httpEquiv)) {
     errors.push(
-      `Invalid httpEquiv value: ${
-        props.httpEquiv
+      `Invalid httpEquiv value: ${props.httpEquiv
       }. Valid values: ${VALID_HTTP_EQUIV.join(', ')}`
     );
   }
@@ -270,11 +269,11 @@ export function MetaHttpEquiv({
   content
 }: {
   httpEquiv:
-    | 'content-type'
-    | 'default-style'
-    | 'refresh'
-    | 'x-ua-compatible'
-    | 'content-security-policy';
+  | 'content-type'
+  | 'default-style'
+  | 'refresh'
+  | 'x-ua-compatible'
+  | 'content-security-policy';
   content: string;
 }) {
   return <Meta httpEquiv={httpEquiv} content={content} />;
@@ -296,14 +295,7 @@ export function MetaOpenGraph({
   siteName?: string;
 }) {
   return (
-    <>
-      {type && <Meta property="og:type" content={type} />}
-      {title && <Meta property="og:title" content={title} />}
-      {description && <Meta property="og:description" content={description} />}
-      {image && <Meta property="og:image" content={image} />}
-      {url && <Meta property="og:url" content={url} />}
-      {siteName && <Meta property="og:site_name" content={siteName} />}
-    </>
+    <>{type && <Meta property="og:type" content={type} />}{title && <Meta property="og:title" content={title} />}{description && <Meta property="og:description" content={description} />}{image && <Meta property="og:image" content={image} />}{url && <Meta property="og:url" content={url} />}{siteName && <Meta property="og:site_name" content={siteName} />}</>
   );
 }
 
@@ -323,14 +315,7 @@ export function MetaTwitterCard({
   image?: string;
 }) {
   return (
-    <>
-      <Meta name="twitter:card" content={card} />
-      {site && <Meta name="twitter:site" content={site} />}
-      {creator && <Meta name="twitter:creator" content={creator} />}
-      {title && <Meta name="twitter:title" content={title} />}
-      {description && <Meta name="twitter:description" content={description} />}
-      {image && <Meta name="twitter:image" content={image} />}
-    </>
+    <><Meta name="twitter:card" content={card} />{site && <Meta name="twitter:site" content={site} />}{creator && <Meta name="twitter:creator" content={creator} />}{title && <Meta name="twitter:title" content={title} />}{description && <Meta name="twitter:description" content={description} />}{image && <Meta name="twitter:image" content={image} />}</>
   );
 }
 

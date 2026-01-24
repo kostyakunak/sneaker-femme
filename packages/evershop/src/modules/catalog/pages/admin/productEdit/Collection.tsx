@@ -1,5 +1,5 @@
 import { Card } from '@components/admin/Card.js';
-import { TagIcon } from '@heroicons/react/24/solid';
+import { TagIcon } from '@heroicons/react/20/solid';
 import React from 'react';
 
 export interface Collection {

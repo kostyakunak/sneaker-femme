@@ -20,6 +20,7 @@ export const ProductListItemRender = ({
   layout?: 'grid' | 'list';
   showAddToCart?: boolean;
   customAddToCartRenderer?: (product: ProductData) => ReactNode;
+  customAddToCartRenderer?: (product: ProductData) => ReactNode;
 }) => {
   if (layout === 'list') {
     return (
@@ -61,7 +62,7 @@ export const ProductListItemRender = ({
 
             <div className="product__list__price mb-2">
               {product.price.special &&
-              product.price.regular < product.price.special ? (
+                product.price.regular < product.price.special ? (
                 <div className="flex items-center gap-2">
                   <span
                     className="regular-price text-sm"
@@ -168,7 +169,7 @@ export const ProductListItemRender = ({
           </h3>
           <div className="product__list__price">
             {product.price.special &&
-            product.price.regular < product.price.special ? (
+              product.price.regular < product.price.special ? (
               <>
                 <span className="regular-price">
                   {product.price.regular.text}

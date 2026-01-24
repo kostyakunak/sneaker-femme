@@ -1,6 +1,6 @@
 import { useCheckout, useCheckoutDispatch } from '@components/frontStore/checkout/CheckoutContext.js';
-import React, { useEffect } from 'react';
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
+import React, { useEffect } from 'react';
 
 export default function TestPayment() {
     const { registerPaymentComponent } = useCheckoutDispatch();

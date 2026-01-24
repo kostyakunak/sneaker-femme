@@ -1,0 +1,6 @@
+{
+    "path": "/admin/supplier-import-fetch",
+    "methods": [
+        "POST"
+    ]
+}
