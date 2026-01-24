@@ -1,4 +1,5 @@
 import { PageHeading } from '@components/admin/PageHeading.js';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import React from 'react';
 
 export interface OrderEditPageHeadingProps {
@@ -13,7 +14,10 @@ export default function OrderEditPageHeading({
   order
 }: OrderEditPageHeadingProps) {
   return (
-    <PageHeading backUrl={backUrl} heading={`Editing #${order.orderNumber}`} />
+    <PageHeading
+      backUrl={backUrl}
+      heading={_('Editing #${orderNumber}', { orderNumber: order.orderNumber })}
+    />
   );
 }
 

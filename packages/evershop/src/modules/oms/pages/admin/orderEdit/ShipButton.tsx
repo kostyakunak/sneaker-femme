@@ -6,6 +6,7 @@ import { useAlertContext } from '@components/common/modal/Alert.js';
 import RenderIfTrue from '@components/common/RenderIfTrue.js';
 import React from 'react';
 import { toast } from 'react-toastify';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 interface ShipButtonProps {
   order: {
@@ -34,11 +35,11 @@ export default function ShipButton({
     return (
       <RenderIfTrue condition={shipmentStatus.code !== 'canceled'}>
         <Button
-          title="Ship Items"
+          title={_('Ship Items')}
           variant="primary"
           onAction={() => {
             openAlert({
-              heading: 'Ship Items',
+              heading: _('Ship Items'),
               content: (
                 <div>
                   <Form
@@ -70,14 +71,14 @@ export default function ShipButton({
                         <InputField
                           type="text"
                           name="tracking_number"
-                          label="Tracking number"
-                          placeholder="Tracking number"
+                          label={_('Tracking number')}
+                          placeholder={_('Tracking number')}
                         />
                       </div>
                       <div>
                         <SelectField
                           name="carrier"
-                          label="Carrier"
+                          label={_('Carrier')}
                           options={carriers}
                         />
                       </div>
@@ -86,12 +87,12 @@ export default function ShipButton({
                 </div>
               ),
               primaryAction: {
-                title: 'Cancel',
+                title: _('Cancel'),
                 onAction: closeAlert,
                 variant: ''
               },
               secondaryAction: {
-                title: 'Ship',
+                title: _('Ship'),
                 onAction: () => {
                   dispatchAlert({
                     type: 'update',

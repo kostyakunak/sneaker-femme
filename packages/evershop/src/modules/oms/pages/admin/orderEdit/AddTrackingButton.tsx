@@ -6,6 +6,7 @@ import { Modal } from '@components/common/modal/Modal.js';
 import { useModal } from '@components/common/modal/useModal.js';
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 interface AddTrackingButtonProps {
   order: {
@@ -33,14 +34,14 @@ export default function AddTrackingButton({
     return (
       <>
         <Button
-          title="Edit Tracking Info"
+          title={_('Edit Tracking Info')}
           variant="primary"
           onAction={() => {
             modal.open();
           }}
         />
         <Modal
-          title="Edit Tracking Information"
+          title={_('Edit Tracking Information')}
           onClose={modal.close}
           isOpen={modal.isOpen}
         >
@@ -59,24 +60,24 @@ export default function AddTrackingButton({
                 <InputField
                   type="text"
                   name="tracking_number"
-                  label="Tracking number"
-                  placeholder="Tracking number"
+                  label={_('Tracking number')}
+                  placeholder={_('Tracking number')}
                   defaultValue={shipment.trackingNumber || ''}
                   required
                   validation={{
-                    required: 'Tracking number is required'
+                    required: _('Tracking number is required')
                   }}
                 />
               </div>
               <div>
                 <SelectField
                   name="carrier"
-                  label="Carrier"
+                  label={_('Carrier')}
                   defaultValue={shipment.carrier || ''}
                   required
                   options={carriers}
                   validation={{
-                    required: 'Carrier is required'
+                    required: _('Carrier is required')
                   }}
                 />
               </div>
@@ -84,12 +85,12 @@ export default function AddTrackingButton({
             <div className="flex justify-end">
               <div className="grid grid-cols-2 gap-2">
                 <Button
-                  title="Cancel"
+                  title={_('Cancel')}
                   variant="danger"
                   onAction={modal.close}
                 />
                 <Button
-                  title="Save"
+                  title={_('Save')}
                   variant="primary"
                   isLoading={form.formState.isSubmitting}
                   onAction={async () => {

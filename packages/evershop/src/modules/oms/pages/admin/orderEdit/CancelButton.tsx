@@ -7,6 +7,7 @@ import RenderIfTrue from '@components/common/RenderIfTrue.js';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
 interface CancelButtonProps {
   order: {
@@ -34,13 +35,13 @@ export default function CancelButton({
       }
     >
       <Button
-        title="Cancel Order"
+        title={_('Cancel Order')}
         variant="danger"
         onAction={() => {
           modal.open();
         }}
       />
-      <Modal title="Cancel Order" onClose={modal.close} isOpen={modal.isOpen}>
+      <Modal title={_('Cancel Order')} onClose={modal.close} isOpen={modal.isOpen}>
         <Form
           form={form}
           id="cancelReason"
@@ -59,19 +60,19 @@ export default function CancelButton({
           <div>
             <TextareaField
               name="reason"
-              label="Reason for cancellation"
-              placeholder="Reason for cancellation"
+              label={_('Reason for cancellation')}
+              placeholder={_('Reason for cancellation')}
               required
               validation={{
-                required: 'Reason is required'
+                required: _('Reason is required')
               }}
             />
           </div>
           <div className="flex justify-end">
             <div className="grid grid-cols-2 gap-2">
-              <Button title="Cancel" variant="danger" onAction={modal.close} />
+              <Button title={_('Cancel')} variant="danger" onAction={modal.close} />
               <Button
-                title="Submit Cancellation"
+                title={_('Submit Cancellation')}
                 variant="primary"
                 isLoading={form.formState.isSubmitting}
                 onAction={async () => {
