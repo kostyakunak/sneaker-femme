@@ -27,6 +27,6 @@ Failed to add product to cart, Не вдалося додати товар до 
 SOLD OUT, РОЗПРОДАНО
 No categories found for "${term}", Категорії не знайдено для "${term}"
 Show all ${count} options, Показати всі ${count} опції
-No options found for "${code}", Опції не знайдено для "${code}"
+No options found for "${code}", Опції не знайдено для ${code}
 Categories, Категорії
 Active Filters, Активні фільтри
