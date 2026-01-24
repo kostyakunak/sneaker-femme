@@ -49,7 +49,7 @@ const Address: React.FC<{
           {_('Delete')}
         </a>
       </div>
-      <Modal title="Edit Address" onClose={modal.close} isOpen={modal.isOpen}>
+      <Modal title={_('Edit Address')} onClose={modal.close} isOpen={modal.isOpen}>
         <Form
           id="customerAddressForm"
           method="PATCH"

@@ -123,7 +123,7 @@ export default function Attributes({
 
   return (
     <Card>
-      <Card.Session title="Attribute group">
+      <Card.Session title={_('Attribute group')}>
         <div>
           {product?.variantGroupId && (
             <div>
@@ -136,15 +136,14 @@ export default function Attributes({
                 <span>{getGroup(items, product?.groupId).groupName}</span>
               </div>
               <div className="italic text-textSubdued">
-                Can not change the attribute group of a product that is already
-                in a variant group.
+                {_('Can not change the attribute group of a product that is already in a variant group.')}
               </div>
             </div>
           )}
           {!product?.variantGroupId && (
             <SelectField
               name="group_id"
-              label="Attribute group"
+              label={_('Attribute group')}
               options={items.map((group) => ({
                 value: group.groupId,
                 label: group.groupName
@@ -155,14 +154,16 @@ export default function Attributes({
           )}
         </div>
       </Card.Session>
-      <Card.Session title="Attributes">
+      <Card.Session title={_('Attributes')}>
         <table className="table table-auto">
           <tbody>
             {fields.map((attribute, index) => {
               const validation =
                 attribute.is_required === 1
                   ? {
-                    required: `${attribute.attribute_name} is required`
+                    required: _('${attribute} is required', {
+                      attribute: attribute.attribute_name
+                    })
                   }
                   : {};
               let Field: React.ReactNode = null;
@@ -193,7 +194,7 @@ export default function Attributes({
                         items,
                         attribute.attribute_id
                       )}
-                      placeholder="Select an option"
+                      placeholder={_('Select an option')}
                       validation={validation}
                     />
                   );
@@ -206,7 +207,7 @@ export default function Attributes({
                         items,
                         attribute.attribute_id
                       )}
-                      placeholder="Select options"
+                      placeholder={_('Select options')}
                       required={attribute.is_required === 1}
                       validation={validation}
                       multiple

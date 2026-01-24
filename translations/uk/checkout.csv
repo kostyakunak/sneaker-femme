@@ -60,3 +60,42 @@ Country is required, Країна обов'язкова для заповнен�
 Postcode is required, Поштовий індекс обов'язковий для заповнення
 Contact, Контакт
 Payment, Оплата
+Your cart is empty, Ваш кошик порожній
+Add some items to get started, Додайте товари, щоб почати
+Your Cart, Ваш кошик
+Close cart, Закрити кошик
+Subtotal, Проміжна сума
+View Cart (${totalQty}), Переглянути кошик (${totalQty})
+Product is out of stock, Товар відсутній на складі
+Cart is not initialized, Кошик не ініціалізовано
+Invalid quantity, Невірна кількість
+Failed to add item to cart, Не вдалося додати товар до кошика
+Select shipping method, Оберіть спосіб доставки
+Shipping (${method}), Доставка (${method})
+Cannot add payment method: cart not initialized, Неможливо додати спосіб оплати: кошик не ініціалізовано
+Failed to add payment method., Не вдалося додати спосіб оплати.
+Failed to add payment method, Не вдалося додати спосіб оплати
+Cannot add shipping method: cart not initialized, Неможливо додати спосіб доставки: кошик не ініціалізовано
+Failed to add shipping method., Не вдалося додати спосіб доставки.
+Failed to add shipping method, Не вдалося додати спосіб доставки
+Cannot add shipping address: cart not initialized, Неможливо додати адресу доставки: кошик не ініціалізовано
+Failed to add shipping address., Не вдалося додати адресу доставки.
+Failed to add shipping address, Не вдалося додати адресу доставки
+Cannot add billing address: cart not initialized, Неможливо додати платіжну адресу: кошик не ініціалізовано
+Failed to add billing address., Не вдалося додати платіжну адресу.
+Failed to add billing address, Не вдалося додати платіжну адресу
+Cannot add contact info: cart not initialized, Неможливо додати контактну інформацію: кошик не ініціалізовано
+Failed to add contact info., Не вдалося додати контактну інформацію.
+Failed to add contact info, Не вдалося додати контактну інформацію
+Cannot apply coupon: cart not initialized, Неможливо застосувати промокод: кошик не ініціалізовано
+No coupon to remove, Немає промокоду для видалення
+Failed to remove coupon., Не вдалося видалити промокод.
+Failed to remove coupon, Не вдалося видалити промокод
+Product not found, Товар не знайдено
+Invalid cart, Невірний кошик
+Requires at least one item to create a cart, Потрібен принаймні один товар для створення кошика
+Too many items requested, Запитано занадто багато товарів
+Some products are not available, Деякі товари недоступні
+Checkout, Оформлення замовлення
+Checkout success, Успішне оформлення замовлення
+Billing Address, Платіжна адреса

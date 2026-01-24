@@ -28,33 +28,33 @@ const SKUPriceWeight: React.FC<{
 }> = ({ sku, price, weight, setting }) => {
   return (
     <div className="grid grid-cols-3 gap-2 mt-4">
-      <InputField
-        name="sku"
-        label="SKU"
-        placeholder="Enter SKU"
-        defaultValue={sku}
-        required
-        helperText={_('SKU must be unique')}
-      />
-      <NumberField
-        name="price"
-        placeholder="Enter price"
-        label={`Price`}
-        defaultValue={price?.value}
-        unit={setting.storeCurrency}
-        min={0}
-        required
-      />
-      <NumberField
-        name="weight"
-        placeholder="Enter weight"
-        label={`Weight`}
-        defaultValue={weight?.value}
-        unit={setting.weightUnit}
-        required
-        validation={{ min: 1 }}
-        helperText={_('Weight must be a positive number')}
-      />
+                      <InputField
+                        name="sku"
+                        label={_('SKU')}
+                        placeholder={_('Enter SKU')}
+                        defaultValue={sku}
+                        required
+                        helperText={_('SKU must be unique')}
+                      />
+                      <NumberField
+                        name="price"
+                        placeholder={_('Enter price')}
+                        label={_('Price')}
+                        defaultValue={price?.value}
+                        unit={setting.storeCurrency}
+                        min={0}
+                        required
+                      />
+                      <NumberField
+                        name="weight"
+                        placeholder={_('Enter weight')}
+                        label={_('Weight')}
+                        defaultValue={weight?.value}
+                        unit={setting.weightUnit}
+                        required
+                        validation={{ min: 1 }}
+                        helperText={_('Weight must be a positive number')}
+                      />
     </div>
   );
 };
@@ -131,46 +131,46 @@ const ProductCategory: React.FC<{
   if (error) {
     return (
       <p className="text-critical">
-        There was an error fetching categories.
+        {_('There was an error fetching categories.')}
         {error.message}
       </p>
     );
   }
   if (fetching) {
-    return <span>Loading...</span>;
+    return <span>{_('Loading...')}</span>;
   }
 
   return (
-    <div>
-      {data.category.path.map((item, index) => (
-        <span key={item.name} className="text-gray-500">
-          {item.name}
-          {index < data.category.path.length - 1 && ' > '}
+      <div>
+        {data.category.path.map((item, index) => (
+          <span key={item.name} className="text-gray-500">
+            {item.name}
+            {index < data.category.path.length - 1 && ' > '}
+          </span>
+        ))}
+        <span className="text-interactive pl-5">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onChange();
+            }}
+          >
+            {_('Change')}
+          </a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onUnassign();
+            }}
+            className="text-critical ml-5"
+          >
+            {_('Unassign')}
+          </a>
         </span>
-      ))}
-      <span className="text-interactive pl-5">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onChange();
-          }}
-        >
-          Change
-        </a>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onUnassign();
-          }}
-          className="text-critical ml-5"
-        >
-          Unassign
-        </a>
-      </span>
-      <input type="hidden" {...register('category_id')} value={categoryId || ''} />
-    </div>
+        <input type="hidden" {...register('category_id')} value={categoryId || ''} />
+      </div>
   );
 };
 
@@ -205,7 +205,7 @@ const CategorySelect: React.FC<{
 
   return (
     <div className="mt-4 relative">
-      <div className="mb-2">Category</div>
+      <div className="mb-2">{_('Category')}</div>
       {category && (
         <div className="border rounded border-[#c9cccf] mb-2 p-2">
           {category && (
@@ -226,11 +226,11 @@ const CategorySelect: React.FC<{
           }}
           className="text-interactive"
         >
-          Select category
+          {_('Select category')}
         </a>
       )}
       <Modal
-        title="Select Category"
+        title={_('Select Category')}
         isOpen={modal.isOpen}
         onClose={modal.close}
       >
